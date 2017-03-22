@@ -42,17 +42,19 @@
     <Compile Include="Code.cs" />
     <Compile Include="ColorTransformation.cs" />
     <Compile Include="CTable.cs" />
-    <Compile Include="DefaultTraitsT.cs" />
+    <Compile Include="DefaultTraits.cs" />
     <Compile Include="FromBigEndian.cs" />
+    <Compile Include="ITraits.cs" />
     <Compile Include="InterleaveMode.cs" />
     <Compile Include="JfifParameters.cs" />
     <Compile Include="JlsParameters.cs" />
     <Compile Include="JlsRect.cs" />
     <Compile Include="JpegLSPresetCodingParameters.cs" />
-    <Compile Include="LosslessTraitsT.cs" />
+    <Compile Include="LosslessTraits.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quad.cs" />
     <Compile Include="Size.cs" />
+    <Compile Include="TraitsBase.cs" />
     <Compile Include="Triplet.cs" />
     <Compile Include="util.cs" />
   </ItemGroup>

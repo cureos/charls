@@ -9,8 +9,6 @@ namespace CharLS
     {
         internal static readonly int INT32_BITCOUNT = sizeof(int) * 8;
 
-        internal const int BASIC_RESET = 64; // Default value as defined in ITU T.87, table C.2
-
         internal static void push_back(IList<byte> values, ushort value)
         {
             values.Add((byte)(value / 0x100));

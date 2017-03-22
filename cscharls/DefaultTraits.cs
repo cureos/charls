@@ -14,72 +14,60 @@ namespace CharLS
     // The coder/decoder also delegates some functions to the traits class.
     // This is to allow the traits class to replace the default implementation here with optimized specific implementations.
     // This is done for lossless coding/decoding: see losslesstraits.h 
-    public class DefaultTraitsT<SAMPLE, PIXEL>
+    public class DefaultTraits<TSample, TPixel> : TraitsBase<TSample, TPixel>
     {
-        private readonly int MAXVAL;
-        private readonly int RANGE;
-        private readonly int NEAR;
-        private readonly int qbpp;
-        private readonly int bpp;
-        private readonly int LIMIT;
-        private readonly int RESET;
-
-        public DefaultTraitsT(int max, int near, int reset = BASIC_RESET)
+        public DefaultTraits(int max, int near, int reset = BASIC_RESET)
+            : base(max, near, reset)
         {
-            MAXVAL = max;
-            RANGE = (max + 2 * near) / (2 * near + 1) + 1;
-            NEAR = near;
-            qbpp = log_2(RANGE);
-            bpp = log_2(max);
-            LIMIT = 2 * (bpp + Math.Max(8, bpp));
-            RESET = reset;
         }
 
-        public DefaultTraitsT(DefaultTraitsT<SAMPLE, PIXEL> other)
+        public DefaultTraits(ITraits<TSample, TPixel> other)
+            : base(other)
         {
-            MAXVAL = other.MAXVAL;
-            RANGE = other.RANGE;
-            NEAR = other.NEAR;
-            qbpp = other.qbpp;
-            bpp = other.bpp;
-            LIMIT = other.LIMIT;
-            RESET = other.RESET;
         }
 
-        public int ComputeErrVal(int e)
+        public override int ComputeErrVal(int e)
         {
             return ModuloRange(Quantize(e));
         }
 
-        public SAMPLE ComputeReconstructedSample(int Px, int ErrVal)
+        public override TSample ComputeReconstructedSample(int Px, int ErrVal)
         {
             return FixReconstructedValue(Px + DeQuantize(ErrVal));
         }
 
-        public bool IsNear(int lhs, int rhs)
+        public override bool IsNear(int lhs, int rhs)
         {
             return Math.Abs(lhs - rhs) <= NEAR;
         }
 
-        public bool IsNear(Triplet<SAMPLE> lhs, Triplet<SAMPLE> rhs)
+        public override bool IsNear(TPixel lhs_, TPixel rhs_)
         {
-            return Math.Abs((int)(object)lhs.v1 - (int)(object)rhs.v1) <= NEAR &&
-                   Math.Abs((int)(object)lhs.v2 - (int)(object)rhs.v2) <= NEAR &&
-                   Math.Abs((int)(object)lhs.v3 - (int)(object)rhs.v3) <= NEAR;
+            var lhs = lhs_ as Triplet<TSample>;
+            var rhs = rhs_ as Triplet<TSample>;
+
+            if (lhs != null || rhs != null)
+            {
+                return Math.Abs((int)(object)lhs.v1 - (int)(object)rhs.v1) <= NEAR
+                       && Math.Abs((int)(object)lhs.v2 - (int)(object)rhs.v2) <= NEAR
+                       && Math.Abs((int)(object)lhs.v3 - (int)(object)rhs.v3) <= NEAR;
+            }
+
+            return IsNear((int)(object)lhs_, (int)(object)rhs_);
         }
 
-        public int CorrectPrediction(int Pxc)
+        public override int CorrectPrediction(int Pxc)
         {
             if ((Pxc & MAXVAL) == Pxc)
                 return Pxc;
 
-            return (~(Pxc >> (INT32_BITCOUNT - 1))) & MAXVAL;
+            return ~(Pxc >> (INT32_BITCOUNT - 1)) & MAXVAL;
         }
 
         /// <summary>
         /// Returns the value of errorValue modulo RANGE. ITU.T.87, A.4.5 (code segment A.9)
         /// </summary>
-        public int ModuloRange(int errorValue)
+        public override int ModuloRange(int errorValue)
         {
             Debug.Assert(Math.Abs(errorValue) <= RANGE);
 
@@ -109,7 +97,7 @@ namespace CharLS
             return Errval * (2 * NEAR + 1);
         }
 
-        private SAMPLE FixReconstructedValue(int val)
+        private TSample FixReconstructedValue(int val)
         {
             if (val < -NEAR)
             {
@@ -120,7 +108,7 @@ namespace CharLS
                 val = val - RANGE * (2 * NEAR + 1);
             }
 
-            return (SAMPLE)(object)(CorrectPrediction(val));
+            return (TSample)(object)(CorrectPrediction(val));
         }
     }
 }
