@@ -1,24 +1,23 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
-using System;
-
 namespace CharLS
 {
-    public class Quad<SAMPLE> : Triplet<SAMPLE>
+    public class Quad<TSample> : Triplet<TSample>
     {
         public Quad()
         {
-            v4 = default(SAMPLE);
+            v4 = default(TSample);
         }
 
-        public Quad(Triplet<SAMPLE> triplet, int alpha) : base(triplet)
+        public Quad(Triplet<TSample> triplet, int alpha)
+            : base(triplet)
         {
-            v4 = (SAMPLE) (object) alpha;
+            v4 = (TSample)(object)alpha;
         }
 
-        public SAMPLE v4 { get; }
+        public TSample v4 { get; }
 
-        public SAMPLE A => v4;
+        public TSample A => v4;
     }
 }
