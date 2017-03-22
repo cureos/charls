@@ -41,16 +41,16 @@ namespace CharLS
             return Math.Abs(lhs - rhs) <= NEAR;
         }
 
-        public override bool IsNear(TPixel lhs_, TPixel rhs_)
+        public override bool IsNear(TPixel lhs, TPixel rhs)
         {
-            var lhs = lhs_ as Triplet<TSample>;
-            var rhs = rhs_ as Triplet<TSample>;
+            var lhs_ = lhs as Triplet<TSample>;
+            var rhs_ = rhs as Triplet<TSample>;
 
-            if (lhs != null || rhs != null)
+            if (lhs != null && rhs != null)
             {
-                return Math.Abs((int)(object)lhs.v1 - (int)(object)rhs.v1) <= NEAR
-                       && Math.Abs((int)(object)lhs.v2 - (int)(object)rhs.v2) <= NEAR
-                       && Math.Abs((int)(object)lhs.v3 - (int)(object)rhs.v3) <= NEAR;
+                return Math.Abs((int)(object)lhs_.v1 - (int)(object)rhs_.v1) <= NEAR
+                       && Math.Abs((int)(object)lhs_.v2 - (int)(object)rhs_.v2) <= NEAR
+                       && Math.Abs((int)(object)lhs_.v3 - (int)(object)rhs_.v3) <= NEAR;
             }
 
             return IsNear((int)(object)lhs_, (int)(object)rhs_);

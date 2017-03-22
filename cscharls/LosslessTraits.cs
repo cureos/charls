@@ -113,9 +113,7 @@ namespace CharLS
 
         public override bool IsNear(Triplet<TSample> lhs, Triplet<TSample> rhs)
         {
-            return Math.Abs((int)(object)lhs.v1 - (int)(object)rhs.v1) <= NEAR
-                   && Math.Abs((int)(object)lhs.v2 - (int)(object)rhs.v2) <= NEAR
-                   && Math.Abs((int)(object)lhs.v3 - (int)(object)rhs.v3) <= NEAR;
+            return lhs == rhs;
         }
 
         public override TSample ComputeReconstructedSample(int Px, int ErrVal)
