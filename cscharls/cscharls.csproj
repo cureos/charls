@@ -47,6 +47,7 @@
     <Compile Include="ITraits.cs" />
     <Compile Include="InterleaveMode.cs" />
     <Compile Include="JfifParameters.cs" />
+    <Compile Include="JlsContext.cs" />
     <Compile Include="JlsParameters.cs" />
     <Compile Include="JlsRect.cs" />
     <Compile Include="JpegLSPresetCodingParameters.cs" />
