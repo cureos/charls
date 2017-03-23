@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
-using System;
-
 using static CharLS.util;
 
 namespace CharLS
@@ -104,9 +102,9 @@ namespace CharLS
         }
     }
 
-    public class LosslessTraitsTriplet<TSample> : LosslessTraitsImpl<TSample, Triplet<TSample>>
+    public class TripletLosslessTraits<TSample> : LosslessTraitsImpl<TSample, Triplet<TSample>>
     {
-        public LosslessTraitsTriplet(int bitsperpixel)
+        public TripletLosslessTraits(int bitsperpixel)
             : base(bitsperpixel)
         {
         }

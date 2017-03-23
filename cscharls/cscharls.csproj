@@ -42,6 +42,7 @@
     <Compile Include="DefaultTraits.cs" />
     <Compile Include="FromBigEndian.cs" />
     <Compile Include="IColorTransform.cs" />
+    <Compile Include="IProcessLine.cs" />
     <Compile Include="ITraits.cs" />
     <Compile Include="InterleaveMode.cs" />
     <Compile Include="JfifParameters.cs" />
