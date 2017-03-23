@@ -33,7 +33,7 @@ namespace CharLS
         HP2 = 2,
 
         /// <summary>
-        /// Defines the reversible lossless color transformation of Y-Cb-Cr):
+        /// Defines the reversible lossless color transformation of Y-Cb-Cr:
         /// R = R - G
         /// B = B - G
         /// G = G + (R + B) / 4

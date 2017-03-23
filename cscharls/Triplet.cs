@@ -14,9 +14,9 @@ namespace CharLS
 
         public Triplet(int x1, int x2, int x3)
         {
-            v1 = (TSample) (object) x1;
-            v2 = (TSample) (object) x2;
-            v3 = (TSample) (object) x3;
+            v1 = (TSample)(object)x1;
+            v2 = (TSample)(object)x2;
+            v3 = (TSample)(object)x3;
         }
 
         protected Triplet(Triplet<TSample> triplet)
@@ -37,6 +37,16 @@ namespace CharLS
         public TSample G => v2;
 
         public TSample B => v3;
+
+        public static bool operator ==(Triplet<TSample> left, Triplet<TSample> right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(Triplet<TSample> left, Triplet<TSample> right)
+        {
+            return !Equals(left, right);
+        }
 
         public bool Equals(Triplet<TSample> other)
         {
@@ -64,16 +74,6 @@ namespace CharLS
                 hashCode = (hashCode * 397) ^ EqualityComparer<TSample>.Default.GetHashCode(v3);
                 return hashCode;
             }
-        }
-
-        public static bool operator ==(Triplet<TSample> left, Triplet<TSample> right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(Triplet<TSample> left, Triplet<TSample> right)
-        {
-            return !Equals(left, right);
         }
     }
 }
