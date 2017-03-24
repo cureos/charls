@@ -11,10 +11,10 @@ namespace CharLS
     // accounting for line padding etc.
     // This mechanism could be used to encode/decode images as they are received.
     //
-    public interface IProcessLine<in TPixel>
+    public interface IProcessLine<in TSample>
     {
-        void NewLineDecoded(TPixel[] pSrc, int pixelCount, int sourceStride);
+        void NewLineDecoded(TSample[] pSrc, int pixelCount, int sourceStride);
 
-        void NewLineRequested(TPixel[] pDest, int pixelCount, int destStride);
+        void NewLineRequested(TSample[] pDest, int pixelCount, int destStride);
     }
 }

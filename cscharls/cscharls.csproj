@@ -52,6 +52,9 @@
     <Compile Include="JlsRect.cs" />
     <Compile Include="JpegLSPresetCodingParameters.cs" />
     <Compile Include="LosslessTraits.cs" />
+    <Compile Include="PostProcesSingleComponent.cs" />
+    <Compile Include="PostProcesSingleStream.cs" />
+    <Compile Include="ProcessTransformed.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quad.cs" />
     <Compile Include="Size.cs" />
