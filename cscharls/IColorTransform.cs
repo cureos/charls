@@ -7,13 +7,14 @@ namespace CharLS
     // It is invoked in processline.h to convert between decoded values and the internal line buffers.
     // Color transforms work best for computer generated images, but are outside the official JPEG-LS specifications.
     public interface IColorTransform<TSample>
+        where TSample : struct
     {
-        Triplet<TSample> ForwardRGB(int v1, int v2, int v3);
+        ITriplet<TSample> ForwardRGB(int v1, int v2, int v3);
 
-        Triplet<TSample> InverseRGB(int v1, int v2, int v3);
+        ITriplet<TSample> InverseRGB(int v1, int v2, int v3);
 
-        Quad<TSample> ForwardRGBA(int v1, int v2, int v3, int v4);
+        ITriplet<TSample> ForwardRGBA(int v1, int v2, int v3, int v4);
 
-        Quad<TSample> InverseRGBA(int v1, int v2, int v3, int v4);
+        ITriplet<TSample> InverseRGBA(int v1, int v2, int v3, int v4);
     }
 }

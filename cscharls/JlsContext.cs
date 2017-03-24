@@ -90,7 +90,6 @@ namespace CharLS
             Debug.Assert(N != 0);
         }
 
-
         public int GetGolomb()
         {
             int Ntest = N;

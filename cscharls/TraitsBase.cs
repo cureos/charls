@@ -8,6 +8,7 @@ using static CharLS.util;
 namespace CharLS
 {
     public abstract class TraitsBase<TSample, TPixel> : ITraits<TSample, TPixel>
+        where TSample : struct
     {
         protected const int BASIC_RESET = 64; // Default value as defined in ITU T.87, table C.2
 

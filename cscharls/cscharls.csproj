@@ -45,6 +45,7 @@
     <Compile Include="IProcessLine.cs" />
     <Compile Include="ITraits.cs" />
     <Compile Include="InterleaveMode.cs" />
+    <Compile Include="ITriplet.cs" />
     <Compile Include="JfifParameters.cs" />
     <Compile Include="JlsContext.cs" />
     <Compile Include="JlsParameters.cs" />

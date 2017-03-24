@@ -9,8 +9,10 @@ namespace CharLS
     // This class assumes MaximumSampleValue correspond to a whole number of bits, and no custom ResetValue is set when encoding.
     // The point of this is to have the most optimized code for the most common and most demanding scenario. 
     public abstract class LosslessTraitsImpl<TSample, TPixel> : TraitsBase<TSample, TPixel>
+        where TSample : struct
     {
-        protected LosslessTraitsImpl(int bitsperpixel) : base(bitsperpixel)
+        protected LosslessTraitsImpl(int bitsperpixel)
+            : base(bitsperpixel)
         {
         }
 
@@ -41,14 +43,14 @@ namespace CharLS
 
         public override int CorrectPrediction(int Pxc)
         {
-            if ((Pxc & MAXVAL) == Pxc)
-                return Pxc;
+            if ((Pxc & MAXVAL) == Pxc) return Pxc;
 
             return ~(Pxc >> (INT32_BITCOUNT - 1)) & MAXVAL;
         }
     }
 
     public class LosslessTraits<TSample> : LosslessTraitsImpl<TSample, TSample>
+        where TSample : struct
     {
         public LosslessTraits(int bitsperpixel)
             : base(bitsperpixel)
@@ -102,16 +104,17 @@ namespace CharLS
         }
     }
 
-    public class TripletLosslessTraits<TSample> : LosslessTraitsImpl<TSample, Triplet<TSample>>
+    public class TripletLosslessTraits<TSample> : LosslessTraitsImpl<TSample, ITriplet<TSample>>
+        where TSample : struct
     {
         public TripletLosslessTraits(int bitsperpixel)
             : base(bitsperpixel)
         {
         }
 
-        public override bool IsNear(Triplet<TSample> lhs, Triplet<TSample> rhs)
+        public override bool IsNear(ITriplet<TSample> lhs, ITriplet<TSample> rhs)
         {
-            return lhs == rhs;
+            return lhs.Equals(rhs);
         }
 
         public override TSample ComputeReconstructedSample(int Px, int ErrVal)

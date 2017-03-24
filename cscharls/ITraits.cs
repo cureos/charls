@@ -4,6 +4,7 @@
 namespace CharLS
 {
     public interface ITraits<out TSample, in TPixel>
+        where TSample : struct
     {
         int MAXVAL { get; }
 

@@ -4,7 +4,7 @@
 namespace CharLS
 {
     public class TransformShifted<TSample, TTransform> : ColorTransformBase<TSample>
-        where TTransform : IColorTransform<TSample>, new()
+        where TSample : struct where TTransform : IColorTransform<TSample>, new()
     {
         private readonly int _shift;
 
@@ -16,24 +16,16 @@ namespace CharLS
             _colorTransform = new TTransform();
         }
 
-        public override Triplet<TSample> ForwardRGB(int v1, int v2, int v3)
+        public override ITriplet<TSample> ForwardRGB(int v1, int v2, int v3)
         {
             var result = _colorTransform.ForwardRGB(v1 << _shift, v2 << _shift, v3 << _shift);
-
-            return new Triplet<TSample>(
-                (int)(object)result.R >> _shift,
-                (int)(object)result.G >> _shift,
-                (int)(object)result.B >> _shift);
+            return new Triplet<TSample>(result.V1 >> _shift, result.V2 >> _shift, result.V3 >> _shift);
         }
 
-        public override Triplet<TSample> InverseRGB(int v1, int v2, int v3)
+        public override ITriplet<TSample> InverseRGB(int v1, int v2, int v3)
         {
             var result = _colorTransform.InverseRGB(v1 << _shift, v2 << _shift, v3 << _shift);
-
-            return new Triplet<TSample>(
-                (int)(object)result.R >> _shift,
-                (int)(object)result.G >> _shift,
-                (int)(object)result.B >> _shift);
+            return new Triplet<TSample>(result.V1 >> _shift, result.V2 >> _shift, result.V3 >> _shift);
         }
     }
 }

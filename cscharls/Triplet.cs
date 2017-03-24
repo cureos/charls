@@ -2,78 +2,77 @@
 // Licensed under the BSD-3 license.
 
 using System;
-using System.Collections.Generic;
 
 namespace CharLS
 {
-    public class Triplet<TSample> : IEquatable<Triplet<TSample>>
+    public struct Triplet<TSample> : ITriplet<TSample>
+        where TSample : struct
     {
-        public Triplet() : this(0, 0, 0)
-        {
-        }
-
         public Triplet(int x1, int x2, int x3)
         {
-            v1 = (TSample)(object)x1;
-            v2 = (TSample)(object)x2;
-            v3 = (TSample)(object)x3;
+            V1 = x1;
+            V2 = x2;
+            V3 = x3;
         }
 
-        protected Triplet(Triplet<TSample> triplet)
-        {
-            v1 = triplet.v1;
-            v2 = triplet.v2;
-            v3 = triplet.v3;
-        }
+        public int V1 { get; }
 
-        public TSample v1 { get; }
+        public int V2 { get; }
 
-        public TSample v2 { get; }
+        public int V3 { get; }
 
-        public TSample v3 { get; }
+        public TSample R => (TSample)(object)V1;
 
-        public TSample R => v1;
+        public TSample G => (TSample)(object)V2;
 
-        public TSample G => v2;
+        public TSample B => (TSample)(object)V3;
 
-        public TSample B => v3;
-
-        public static bool operator ==(Triplet<TSample> left, Triplet<TSample> right)
+        public static bool operator ==(Triplet<TSample> left, ITriplet<TSample> right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(Triplet<TSample> left, Triplet<TSample> right)
+        public static bool operator !=(Triplet<TSample> left, ITriplet<TSample> right)
         {
             return !Equals(left, right);
         }
 
-        public bool Equals(Triplet<TSample> other)
+        public static bool operator ==(ITriplet<TSample> left, Triplet<TSample> right)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return EqualityComparer<TSample>.Default.Equals(v1, other.v1) &&
-                   EqualityComparer<TSample>.Default.Equals(v2, other.v2) &&
-                   EqualityComparer<TSample>.Default.Equals(v3, other.v3);
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(ITriplet<TSample> left, Triplet<TSample> right)
+        {
+            return !Equals(left, right);
+        }
+
+        public bool Equals(ITriplet<TSample> other)
+        {
+            return V1 == other.V1 && V2 == other.V2 && V3 == other.V3;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((Triplet<TSample>) obj);
+            return Equals((ITriplet<TSample>)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                var hashCode = EqualityComparer<TSample>.Default.GetHashCode(v1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<TSample>.Default.GetHashCode(v2);
-                hashCode = (hashCode * 397) ^ EqualityComparer<TSample>.Default.GetHashCode(v3);
+                var hashCode = V1.GetHashCode();
+                hashCode = (hashCode * 397) ^ V2.GetHashCode();
+                hashCode = (hashCode * 397) ^ V3.GetHashCode();
                 return hashCode;
             }
+        }
+
+        public bool IsNear(ITriplet<TSample> other, int tolerance)
+        {
+            return Math.Abs(other.V1 - V1) <= tolerance && Math.Abs(other.V2 - V2) <= tolerance
+                   && Math.Abs(other.V3 - V3) <= tolerance;
         }
     }
 }

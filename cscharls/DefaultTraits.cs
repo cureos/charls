@@ -15,6 +15,7 @@ namespace CharLS
     // This is to allow the traits class to replace the default implementation here with optimized specific implementations.
     // This is done for lossless coding/decoding: see losslesstraits.h 
     public class DefaultTraits<TSample, TPixel> : TraitsBase<TSample, TPixel>
+        where TSample : struct
     {
         public DefaultTraits(int max, int near, int reset = BASIC_RESET)
             : base(max, near, reset)
@@ -43,14 +44,12 @@ namespace CharLS
 
         public override bool IsNear(TPixel lhs, TPixel rhs)
         {
-            var lhs_ = lhs as Triplet<TSample>;
-            var rhs_ = rhs as Triplet<TSample>;
+            var lhs_ = lhs as ITriplet<TSample>;
+            var rhs_ = rhs as ITriplet<TSample>;
 
-            if (lhs != null && rhs != null)
+            if (lhs_ != null && rhs_ != null)
             {
-                return Math.Abs((int)(object)lhs_.v1 - (int)(object)rhs_.v1) <= NEAR
-                       && Math.Abs((int)(object)lhs_.v2 - (int)(object)rhs_.v2) <= NEAR
-                       && Math.Abs((int)(object)lhs_.v3 - (int)(object)rhs_.v3) <= NEAR;
+                return rhs_.IsNear(lhs_, NEAR);
             }
 
             return IsNear((int)(object)lhs_, (int)(object)rhs_);
@@ -58,8 +57,7 @@ namespace CharLS
 
         public override int CorrectPrediction(int Pxc)
         {
-            if ((Pxc & MAXVAL) == Pxc)
-                return Pxc;
+            if ((Pxc & MAXVAL) == Pxc) return Pxc;
 
             return ~(Pxc >> (INT32_BITCOUNT - 1)) & MAXVAL;
         }
@@ -75,6 +73,7 @@ namespace CharLS
             {
                 errorValue += RANGE;
             }
+
             if (errorValue >= (RANGE + 1) / 2)
             {
                 errorValue -= RANGE;
@@ -86,8 +85,7 @@ namespace CharLS
 
         private int Quantize(int Errval)
         {
-            if (Errval > 0)
-                return (Errval + NEAR) / (2 * NEAR + 1);
+            if (Errval > 0) return (Errval + NEAR) / (2 * NEAR + 1);
 
             return -(NEAR - Errval) / (2 * NEAR + 1);
         }
@@ -108,7 +106,7 @@ namespace CharLS
                 val = val - RANGE * (2 * NEAR + 1);
             }
 
-            return (TSample)(object)(CorrectPrediction(val));
+            return (TSample)(object)CorrectPrediction(val);
         }
     }
 }
