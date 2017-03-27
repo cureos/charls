@@ -6,18 +6,42 @@ namespace CharLS
     public abstract class ColorTransformBase<TSample> : IColorTransform<TSample>
         where TSample : struct
     {
-        public abstract ITriplet<TSample> ForwardRGB(int v1, int v2, int v3);
-
-        public abstract ITriplet<TSample> InverseRGB(int v1, int v2, int v3);
-
-        public virtual ITriplet<TSample> ForwardRGBA(int v1, int v2, int v3, int v4)
+        protected ColorTransformBase()
         {
-            return new Quad<TSample>(ForwardRGB(v1, v2, v3), v4);
+            Inverse = new InverseColorTransform(this);
         }
 
-        public virtual ITriplet<TSample> InverseRGBA(int v1, int v2, int v3, int v4)
+        public IColorTransform<TSample> Inverse { get; }
+
+        public abstract ITriplet<TSample> Transform(int v1, int v2, int v3);
+
+        public virtual ITriplet<TSample> Transform(int v1, int v2, int v3, int v4)
         {
-            return new Quad<TSample>(InverseRGB(v1, v2, v3), v4);
+            return new Quad<TSample>(Transform(v1, v2, v3), v4);
+        }
+
+        protected abstract ITriplet<TSample> InverseImpl(int v1, int v2, int v3);
+
+        private class InverseColorTransform : IColorTransform<TSample>
+        {
+            private readonly ColorTransformBase<TSample> _forward;
+
+            internal InverseColorTransform(ColorTransformBase<TSample> forward)
+            {
+                _forward = forward;
+            }
+
+            public IColorTransform<TSample> Inverse => _forward;
+
+            public ITriplet<TSample> Transform(int v1, int v2, int v3)
+            {
+                return _forward.InverseImpl(v1, v2, v3);
+            }
+
+            public ITriplet<TSample> Transform(int v1, int v2, int v3, int v4)
+            {
+                return new Quad<TSample>(Transform(v1, v2, v3), v4);
+            }
         }
     }
 }

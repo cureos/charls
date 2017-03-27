@@ -8,11 +8,11 @@ namespace CharLS
     public interface ITriplet<TSample> : IEquatable<ITriplet<TSample>>
         where TSample : struct
     {
-        int V1 { get; }
+        int v1 { get; }
 
-        int V2 { get; }
+        int v2 { get; }
 
-        int V3 { get; }
+        int v3 { get; }
 
         TSample R { get; }
 

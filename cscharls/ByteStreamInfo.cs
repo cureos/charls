@@ -50,11 +50,6 @@ namespace CharLS
             return new ByteStreamInfo(bytes, count);
         }
 
-        public static ByteStreamInfo FromStream(Stream stream)
-        {
-            return new ByteStreamInfo(stream);
-        }
-
         public static void SkipBytes(ByteStreamInfo streamInfo, long count)
         {
             if (streamInfo.rawData == null) return;

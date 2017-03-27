@@ -9,12 +9,10 @@ namespace CharLS
     public interface IColorTransform<TSample>
         where TSample : struct
     {
-        ITriplet<TSample> ForwardRGB(int v1, int v2, int v3);
+        IColorTransform<TSample> Inverse { get; }
 
-        ITriplet<TSample> InverseRGB(int v1, int v2, int v3);
+        ITriplet<TSample> Transform(int v1, int v2, int v3);
 
-        ITriplet<TSample> ForwardRGBA(int v1, int v2, int v3, int v4);
-
-        ITriplet<TSample> InverseRGBA(int v1, int v2, int v3, int v4);
+        ITriplet<TSample> Transform(int v1, int v2, int v3, int v4);
     }
 }

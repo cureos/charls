@@ -2,34 +2,48 @@
 // Licensed under the BSD-3 license.
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace CharLS
 {
+    [StructLayout(LayoutKind.Explicit)]
     public struct Quad<TSample> : ITriplet<TSample> where TSample : struct
     {
+        [FieldOffset(0)]
+        private readonly int _v1;
+
+        [FieldOffset(4)]
+        private readonly int _v2;
+
+        [FieldOffset(8)]
+        private readonly int _v3;
+
+        [FieldOffset(12)]
         private readonly int _v4;
 
         public Quad(ITriplet<TSample> triplet, int alpha)
         {
-            V1 = triplet.V1;
-            V2 = triplet.V2;
-            V3 = triplet.V3;
+            _v1 = triplet.v1;
+            _v2 = triplet.v2;
+            _v3 = triplet.v3;
             _v4 = alpha;
         }
 
-        public int V1 { get; }
+        public int v1 => _v1;
 
-        public int V2 { get; }
+        public int v2 => _v2;
 
-        public int V3 { get; }
+        public int v3 => _v3;
 
-        public TSample R => (TSample)(object)V1;
+        public int v4 => _v4;
 
-        public TSample G => (TSample)(object)V2;
+        public TSample R => (TSample)(object)v1;
 
-        public TSample B => (TSample)(object)V3;
+        public TSample G => (TSample)(object)v2;
 
-        public TSample A => (TSample)(object)_v4;
+        public TSample B => (TSample)(object)v3;
+
+        public TSample A => (TSample)(object)v4;
 
         public static bool operator ==(Quad<TSample> left, ITriplet<TSample> right)
         {
@@ -53,7 +67,7 @@ namespace CharLS
 
         public bool Equals(ITriplet<TSample> other)
         {
-            return V1 == other.V1 && V2 == other.V2 && V3 == other.V3;
+            return v1 == other.v1 && v2 == other.v2 && v3 == other.v3;
         }
 
         public override bool Equals(object obj)
@@ -66,17 +80,17 @@ namespace CharLS
         {
             unchecked
             {
-                var hashCode = V1.GetHashCode();
-                hashCode = (hashCode * 397) ^ V2.GetHashCode();
-                hashCode = (hashCode * 397) ^ V3.GetHashCode();
+                var hashCode = v1.GetHashCode();
+                hashCode = (hashCode * 397) ^ v2.GetHashCode();
+                hashCode = (hashCode * 397) ^ v3.GetHashCode();
                 return hashCode;
             }
         }
 
         public bool IsNear(ITriplet<TSample> other, int tolerance)
         {
-            return Math.Abs(other.V1 - V1) <= tolerance && Math.Abs(other.V2 - V2) <= tolerance
-                   && Math.Abs(other.V3 - V3) <= tolerance;
+            return Math.Abs(other.v1 - v1) <= tolerance && Math.Abs(other.v2 - v2) <= tolerance
+                   && Math.Abs(other.v3 - v3) <= tolerance;
         }
     }
 }

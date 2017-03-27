@@ -5,17 +5,12 @@ using System.Runtime.InteropServices;
 
 namespace CharLS
 {
-    public class TransformHp3<TSample> : ColorTransformBase<TSample>
+    public sealed class TransformHp3<TSample> : ColorTransformBase<TSample>
         where TSample : struct
     {
-        private readonly int RANGE;
+        private readonly int RANGE  = 1 << (Marshal.SizeOf(default(TSample)) * 8);
 
-        public TransformHp3()
-        {
-            RANGE = 1 << (Marshal.SizeOf(default(TSample)) * 8);
-        }
-
-        public override ITriplet<TSample> ForwardRGB(int v1, int v2, int v3)
+        public override ITriplet<TSample> Transform(int v1, int v2, int v3)
         {
             var g = v3 - v2 + RANGE / 2;
             var b = v1 - v2 + RANGE / 2;
@@ -24,7 +19,7 @@ namespace CharLS
             return new Triplet<TSample>(r, g, b);
         }
 
-        public override ITriplet<TSample> InverseRGB(int v1, int v2, int v3)
+        protected override ITriplet<TSample> InverseImpl(int v1, int v2, int v3)
         {
             var g = v1 - ((v3 + v2) >> 2) + RANGE / 4;
             var r = v3 + g - RANGE / 2;

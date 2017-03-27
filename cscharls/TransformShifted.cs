@@ -16,16 +16,16 @@ namespace CharLS
             _colorTransform = new TTransform();
         }
 
-        public override ITriplet<TSample> ForwardRGB(int v1, int v2, int v3)
+        public override ITriplet<TSample> Transform(int v1, int v2, int v3)
         {
-            var result = _colorTransform.ForwardRGB(v1 << _shift, v2 << _shift, v3 << _shift);
-            return new Triplet<TSample>(result.V1 >> _shift, result.V2 >> _shift, result.V3 >> _shift);
+            var result = _colorTransform.Transform(v1 << _shift, v2 << _shift, v3 << _shift);
+            return new Triplet<TSample>(result.v1 >> _shift, result.v2 >> _shift, result.v3 >> _shift);
         }
 
-        public override ITriplet<TSample> InverseRGB(int v1, int v2, int v3)
+        protected override ITriplet<TSample> InverseImpl(int v1, int v2, int v3)
         {
-            var result = _colorTransform.InverseRGB(v1 << _shift, v2 << _shift, v3 << _shift);
-            return new Triplet<TSample>(result.V1 >> _shift, result.V2 >> _shift, result.V3 >> _shift);
+            var result = _colorTransform.Inverse.Transform(v1 << _shift, v2 << _shift, v3 << _shift);
+            return new Triplet<TSample>(result.v1 >> _shift, result.v2 >> _shift, result.v3 >> _shift);
         }
     }
 }
