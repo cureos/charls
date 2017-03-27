@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
+using System;
+
 namespace CharLS
 {
     //
@@ -11,10 +13,10 @@ namespace CharLS
     // accounting for line padding etc.
     // This mechanism could be used to encode/decode images as they are received.
     //
-    public interface IProcessLine<in TSample>
+    public interface IProcessLine
     {
-        void NewLineDecoded(TSample[] pSrc, int pixelCount, int sourceStride);
+        void NewLineDecoded(ArraySegment<byte> pSrc, int pixelCount, int sourceStride);
 
-        void NewLineRequested(TSample[] pDest, int pixelCount, int destStride);
+        void NewLineRequested(ArraySegment<byte> pDest, int pixelCount, int destStride);
     }
 }

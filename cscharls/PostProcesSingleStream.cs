@@ -3,11 +3,10 @@
 
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace CharLS
 {
-    public class PostProcesSingleStream<TSample> : IProcessLine<TSample>
+    public class PostProcesSingleStream : IProcessLine
     {
         private readonly Stream _rawData;
 
@@ -33,38 +32,24 @@ namespace CharLS
             _bytesPerLine = parameters.stride;
         }
 
-        public void NewLineDecoded(TSample[] pSrc, int pixelCount, int sourceStride)
+        public void NewLineDecoded(ArraySegment<byte> pSrc, int pixelCount, int sourceStride)
         {
             if (!_canDecode) throw new InvalidOperationException("Raw data stream does not support writing");
-
-            var bytesToWrite = pixelCount * _bytesPerPixel;
-            var tmp = new byte[bytesToWrite];
-
-            var handle = GCHandle.Alloc(pSrc, GCHandleType.Pinned);
-            Marshal.Copy(handle.AddrOfPinnedObject(), tmp, 0, bytesToWrite);
-            handle.Free();
-            
-            _rawData.Write(tmp, 0, bytesToWrite);
+            _rawData.Write(pSrc.Array, pSrc.Offset, pixelCount * _bytesPerPixel);
         }
 
-        public void NewLineRequested(TSample[] pDest, int pixelCount, int destStride)
+        public void NewLineRequested(ArraySegment<byte> pDest, int pixelCount, int destStride)
         {
             if (!_canDecode) throw new InvalidOperationException("Raw data stream does not support reading");
 
             var bytesToRead = pixelCount * _bytesPerPixel;
-            var tmp = new byte[bytesToRead];
-
-            var bytesRead = _rawData.Read(tmp, 0, bytesToRead);
+            var bytesRead = _rawData.Read(pDest.Array, pDest.Offset, bytesToRead);
             if (bytesRead < bytesToRead) throw new charls_error(ApiResult.CompressedBufferTooSmall);
 
             if (_bytesPerPixel == 2)
             {
-                ByteSwap(tmp, bytesToRead);
+                ByteSwap(pDest, bytesToRead);
             }
-
-            var handle = GCHandle.Alloc(pDest, GCHandleType.Pinned);
-            Marshal.Copy(tmp, 0, handle.AddrOfPinnedObject(), bytesToRead);
-            handle.Free();
 
             if (_bytesPerLine > bytesToRead)
             {
@@ -72,7 +57,7 @@ namespace CharLS
             }
         }
 
-        private static void ByteSwap(byte[] data, int count)
+        private static void ByteSwap(ArraySegment<byte> data, int count)
         {
             if ((count & 1) != 0)
             {
@@ -80,11 +65,15 @@ namespace CharLS
                 throw new charls_error(ApiResult.InvalidJlsParameters, message);
             }
 
-            for (var i = 0; i < count; i += 2)
+            var array = data.Array;
+            var begin = data.Offset;
+            var end = begin + count;
+
+            for (var i = begin; i < end; i += 2)
             {
-                var tmp = data[i];
-                data[i] = data[i + 1];
-                data[i + 1] = tmp;
+                var tmp = array[i];
+                array[i] = array[i + 1];
+                array[i + 1] = tmp;
             }
         }
     }

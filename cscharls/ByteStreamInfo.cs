@@ -19,6 +19,8 @@ namespace CharLS
     //
     public class ByteStreamInfo
     {
+        private byte[] _rawData;
+
         private long _position;
 
         public ByteStreamInfo(Stream stream)
@@ -26,7 +28,8 @@ namespace CharLS
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             rawStream = stream;
-            rawData = null;
+            _rawData = null;
+            _position = 0;
             count = stream.CanSeek ? stream.Length : -1;
         }
 
@@ -35,13 +38,14 @@ namespace CharLS
             if (bytes == null) throw new ArgumentNullException(nameof(bytes));
 
             rawStream = null;
-            rawData = bytes;
-            count = length > 0 ?  length : bytes.Length;
+            _rawData = bytes;
+            _position = 0;
+            count = length > 0 ? length : bytes.Length;
         }
 
         public Stream rawStream { get; }
 
-        public byte[] rawData { get; }
+        public ArraySegment<byte> rawData => new ArraySegment<byte>(_rawData, (int)_position, (int)count);
 
         public long count { get; private set; }
 
@@ -52,10 +56,15 @@ namespace CharLS
 
         public static void SkipBytes(ByteStreamInfo streamInfo, long count)
         {
-            if (streamInfo.rawData == null) return;
+            streamInfo.Seek(count);
+        }
 
-            streamInfo._position += count;
-            streamInfo.count -= count;
+        public void Seek(long skip)
+        {
+            if (_rawData == null) return;
+
+            _position += skip;
+            count -= skip;
         }
     }
 }

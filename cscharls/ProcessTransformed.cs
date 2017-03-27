@@ -7,16 +7,14 @@ using System.Runtime.InteropServices;
 
 namespace CharLS
 {
-    public class ProcessTransformed<TSample> : IProcessLine<TSample>
+    public class ProcessTransformed<TSample> : IProcessLine
         where TSample : struct
     {
         private readonly int _sizeofSample = Marshal.SizeOf(default(TSample));
 
         private readonly JlsParameters _params;
 
-        private readonly TSample[] _templine;
-
-        private readonly byte[] _buffer;
+        private readonly ArraySegment<byte> _buffer;
 
         private readonly IColorTransform<TSample> _transform;
 
@@ -27,38 +25,36 @@ namespace CharLS
         public ProcessTransformed(ByteStreamInfo rawStream, JlsParameters info, IColorTransform<TSample> transform)
         {
             _params = info;
-            _templine = new TSample[info.width * info.components];
-            _buffer = new byte[info.width * info.components * _sizeofSample];
+            _buffer = new ArraySegment<byte>(new byte[info.width * info.components * _sizeofSample]);
             _transform = transform;
             _inverseTransform = transform.Inverse;
             _rawPixels = rawStream;
         }
 
-        public void NewLineDecoded(TSample[] pSrc, int pixelCount, int sourceStride)
+        public void NewLineDecoded(ArraySegment<byte> pSrc, int pixelCount, int sourceStride)
         {
             if (_rawPixels.rawStream != null)
             {
                 var bytesToWrite = pixelCount * _params.components * _sizeofSample;
-                DecodeTransform(pSrc, _buffer, pixelCount, sourceStride);
-
-                if (bytesToWrite > _buffer.Length)
+                if (bytesToWrite > _buffer.Array.Length)
                     throw new charls_error(ApiResult.UncompressedBufferTooSmall);
 
-                _rawPixels.rawStream.Write(_buffer, 0, bytesToWrite);
+                DecodeTransform(pSrc, _buffer, pixelCount, sourceStride);
+                _rawPixels.rawStream.Write(_buffer.Array, 0, bytesToWrite);
             }
             else
             {
                 DecodeTransform(pSrc, _rawPixels.rawData, pixelCount, sourceStride);
-                _rawPixels.rawData += _params.stride;
+                _rawPixels.Seek(_params.stride);
             }
         }
 
-        public void NewLineRequested(TSample[] pDest, int pixelCount, int destStride)
+        public void NewLineRequested(ArraySegment<byte> pDest, int pixelCount, int destStride)
         {
             if (_rawPixels.rawStream == null)
             {
                 Transform(_rawPixels.rawData, pDest, pixelCount, destStride);
-                _rawPixels.rawData += _params.stride;
+                _rawPixels.Seek(_params.stride);
                 return;
             }
 
@@ -169,10 +165,10 @@ namespace CharLS
             }
         }
 
-        private void Transform(Stream rawStream, TSample[] dest, int pixelCount, int destStride)
+        private void Transform(Stream rawStream, ArraySegment<byte> dest, int pixelCount, int destStride)
         {
             var bytesToRead = pixelCount * _params.components * _sizeofSample;
-            var read = rawStream.Read(_buffer, 0, bytesToRead);
+            var read = rawStream.Read(_buffer.Array, 0, bytesToRead);
             if (read < bytesToRead)
             {
                 var message = $"No more bytes available in input buffer, still needing {bytesToRead - read}";
@@ -182,10 +178,8 @@ namespace CharLS
             Transform(_buffer, dest, pixelCount, destStride);
         }
 
-        private void Transform(byte[] src, TSample[] dest, int pixelCount, int destStride)
+        private void Transform(ArraySegment<byte> source, ArraySegment<byte> dest, int pixelCount, int destStride)
         {
-            var source = new TSample[_params.components * pixelCount];
-            
             if (_params.outputBgr)
             {
                 TransformRgbToBgr(source, _params.components, pixelCount);
@@ -208,7 +202,7 @@ namespace CharLS
             }
         }
 
-        private void DecodeTransform(TSample[] pSrc, TSample[] rawData, int pixelCount, int byteStride)
+        private void DecodeTransform(ArraySegment<byte> pSrc, ArraySegment<byte> rawData, int pixelCount, int byteStride)
         {
             if (_params.components == 3)
             {

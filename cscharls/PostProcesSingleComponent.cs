@@ -1,11 +1,11 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
-using System.Runtime.InteropServices;
+using System;
 
 namespace CharLS
 {
-    public class PostProcesSingleComponent<TSample> : IProcessLine<TSample>
+    public class PostProcesSingleComponent : IProcessLine
     {
         private readonly byte[] _rawData;
 
@@ -23,21 +23,15 @@ namespace CharLS
             _position = 0;
         }
 
-        public void NewLineDecoded(TSample[] pSrc, int pixelCount, int sourceStride)
+        public void NewLineDecoded(ArraySegment<byte> pSrc, int pixelCount, int sourceStride)
         {
-            var handle = GCHandle.Alloc(pSrc, GCHandleType.Pinned);
-            Marshal.Copy(handle.AddrOfPinnedObject(), _rawData, _position, pixelCount * _bytesPerPixel);
-            handle.Free();
-
+            Array.Copy(pSrc.Array, pSrc.Offset, _rawData, _position, pixelCount * _bytesPerPixel);
             _position += _bytesPerLine;
         }
 
-        public void NewLineRequested(TSample[] pDest, int pixelCount, int destStride)
+        public void NewLineRequested(ArraySegment<byte> pDest, int pixelCount, int destStride)
         {
-            var handle = GCHandle.Alloc(pDest, GCHandleType.Pinned);
-            Marshal.Copy(_rawData, _position, handle.AddrOfPinnedObject(), pixelCount * _bytesPerPixel);
-            handle.Free();
-
+            Array.Copy(_rawData, _position, pDest.Array,  pDest.Offset, pixelCount * _bytesPerPixel);
             _position += _bytesPerLine;
         }
     }

@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ApiResult.cs" />
+    <Compile Include="ArrayExtensions.cs" />
     <Compile Include="ByteStreamInfo.cs" />
     <Compile Include="charls_error.cs" />
     <Compile Include="Code.cs" />
