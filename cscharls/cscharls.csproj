@@ -57,6 +57,7 @@
     <Compile Include="JpegLSPresetCodingParameters.cs" />
     <Compile Include="JpegMarkerCode.cs" />
     <Compile Include="JpegMarkerSegment.cs" />
+    <Compile Include="JpegStreamReader.cs" />
     <Compile Include="JpegStreamWriter.cs" />
     <Compile Include="LosslessTraits.cs" />
     <Compile Include="PostProcesSingleComponent.cs" />
