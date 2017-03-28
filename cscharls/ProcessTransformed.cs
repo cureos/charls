@@ -183,9 +183,9 @@ namespace CharLS
         }
 
         private static void TransformTripletToLine(
-            /*Triplet<TSample>[]*/ ArraySegment<byte> ptypeBufferIn,
+            ArraySegment<byte> ptypeBufferIn,
             int pixelStrideIn,
-            /*TSample[]*/ ArraySegment<byte> ptypeBuffer,
+            ArraySegment<byte> ptypeBuffer,
             int pixelStride,
             IColorTransform<TSample> transform)
         {

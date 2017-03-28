@@ -36,6 +36,7 @@
     <Compile Include="ApiResult.cs" />
     <Compile Include="ByteArraySegmentExtensions.cs" />
     <Compile Include="ByteStreamInfo.cs" />
+    <Compile Include="CContextRunMode.cs" />
     <Compile Include="charls_error.cs" />
     <Compile Include="Code.cs" />
     <Compile Include="ColorTransformation.cs" />
@@ -43,6 +44,7 @@
     <Compile Include="DefaultTraits.cs" />
     <Compile Include="FromBigEndian.cs" />
     <Compile Include="IColorTransform.cs" />
+    <Compile Include="IJpegSegment.cs" />
     <Compile Include="IProcessLine.cs" />
     <Compile Include="ITraits.cs" />
     <Compile Include="InterleaveMode.cs" />
@@ -51,7 +53,11 @@
     <Compile Include="JlsContext.cs" />
     <Compile Include="JlsParameters.cs" />
     <Compile Include="JlsRect.cs" />
+    <Compile Include="JpegImageDataSegment.cs" />
     <Compile Include="JpegLSPresetCodingParameters.cs" />
+    <Compile Include="JpegMarkerCode.cs" />
+    <Compile Include="JpegMarkerSegment.cs" />
+    <Compile Include="JpegStreamWriter.cs" />
     <Compile Include="LosslessTraits.cs" />
     <Compile Include="PostProcesSingleComponent.cs" />
     <Compile Include="PostProcesSingleStream.cs" />

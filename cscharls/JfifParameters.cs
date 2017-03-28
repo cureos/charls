@@ -52,6 +52,6 @@ namespace CharLS
         /// Reference to a buffer with thumbnail pixels of size Xthumbnail * Ythumbnail * 3(RGB).
         /// This parameter is only used when creating JPEG-LS encoded images.
         /// </summary>
-        public IntPtr thumbnail { get; set; }
+        public byte[] thumbnail { get; set; }
     }
 }
