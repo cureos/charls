@@ -41,6 +41,7 @@
     <Compile Include="Code.cs" />
     <Compile Include="ColorTransformation.cs" />
     <Compile Include="CTable.cs" />
+    <Compile Include="DecoderStrategy.cs" />
     <Compile Include="DefaultTraits.cs" />
     <Compile Include="FromBigEndian.cs" />
     <Compile Include="IColorTransform.cs" />
