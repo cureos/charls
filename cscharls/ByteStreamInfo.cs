@@ -54,11 +54,6 @@ namespace CharLS
             return new ByteStreamInfo(bytes, count);
         }
 
-        public static void SkipBytes(ByteStreamInfo streamInfo, long count)
-        {
-            streamInfo.Seek(count);
-        }
-
         public void Seek(long skip)
         {
             if (_rawData == null) return;

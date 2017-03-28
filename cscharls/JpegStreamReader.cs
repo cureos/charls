@@ -2,11 +2,16 @@
 // Licensed under the BSD-3 license.
 
 using System.Collections.Generic;
+using System.Linq;
+
+using static CharLS.util;
 
 namespace CharLS
 {
     public class JpegStreamReader
     {
+        private static readonly byte[] jfifID = { (byte)'J', (byte)'F', (byte)'I', (byte)'F', (byte)'\0' };
+
         private readonly ByteStreamInfo _byteStream;
 
         private JlsParameters _params;
@@ -20,21 +25,20 @@ namespace CharLS
 
         public JlsParameters GetMetadata()
         {
-        return _params;
-    }
+            return _params;
+        }
 
-    public JpegLSPresetCodingParameters GetCustomPreset()
-    {
-        return _params.custom;
-    }
+        public JpegLSPresetCodingParameters GetCustomPreset()
+        {
+            return _params.custom;
+        }
 
-        public void Read(ByteStreamInfo info)
+        public void Read(ByteStreamInfo rawPixels)
         {
             ReadHeader();
 
-            const auto result = CheckParameterCoherent(_params);
-            if (result != ApiResult.OK)
-                throw charls_error(result);
+            var result = CheckParameterCoherent(_params);
+            if (result != ApiResult.OK) throw new charls_error(result);
 
             if (_rect.Width <= 0)
             {
@@ -42,10 +46,9 @@ namespace CharLS
                 _rect.Height = _params.height;
             }
 
-            const int64_t bytesPerPlane = static_cast<int64_t>(_rect.Width) * _rect.Height * ((_params.bitsPerSample + 7) / 8);
+            long bytesPerPlane = _rect.Width * _rect.Height * ((_params.bitsPerSample + 7) / 8);
 
-            if (rawPixels.rawData && static_cast<int64_t>(rawPixels.count) < bytesPerPlane * _params.components)
-                throw charls_error(ApiResult.UncompressedBufferTooSmall);
+            if (rawPixels.rawStream == null && rawPixels.count < bytesPerPlane * _params.components) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
 
             int componentIndex = 0;
 
@@ -53,13 +56,12 @@ namespace CharLS
             {
                 ReadStartOfScan(componentIndex == 0);
 
-                unique_ptr<DecoderStrategy> qcodec = JlsCodecFactory<DecoderStrategy>().GetCodec(_params, _params.custom);
-                unique_ptr<ProcessLine> processLine(qcodec->CreateProcess(rawPixels));
-                qcodec->DecodeScan(move(processLine), _rect, _byteStream);
-                SkipBytes(rawPixels, static_cast<size_t>(bytesPerPlane));
+                /*var qcodec = JlsCodecFactory<DecoderStrategy>().GetCodec(_params, _params.custom);
+                var processLine = qcodec.CreateProcess(rawPixels);
+                qcodec.DecodeScan(processLine, _rect, _byteStream);*/
+                SkipBytes(rawPixels, bytesPerPlane);
 
-                if (_params.interleaveMode != InterleaveMode.None)
-                    return;
+                if (_params.interleaveMode != InterleaveMode.None) return;
 
                 componentIndex += 1;
             }
@@ -67,21 +69,18 @@ namespace CharLS
 
         public void ReadHeader()
         {
-            if (ReadNextMarker() != JpegMarkerCode.StartOfImage)
-                throw charls_error(ApiResult.InvalidCompressedData);
+            if (ReadNextMarker() != JpegMarkerCode.StartOfImage) throw new charls_error(ApiResult.InvalidCompressedData);
 
             for (;;)
             {
-                const JpegMarkerCode marker = ReadNextMarker();
-                if (marker == JpegMarkerCode.StartOfScan)
-                    return;
+                JpegMarkerCode marker = ReadNextMarker();
+                if (marker == JpegMarkerCode.StartOfScan) return;
 
-                const int32_t cbyteMarker = ReadWord();
-                const int bytesRead = ReadMarker(marker) + 2;
+                int cbyteMarker = ReadWord();
+                int bytesRead = ReadMarker(marker) + 2;
 
-                const int paddingToRead = cbyteMarker - bytesRead;
-                if (paddingToRead < 0)
-                    throw charls_error(ApiResult.InvalidCompressedData);
+                int paddingToRead = cbyteMarker - bytesRead;
+                if (paddingToRead < 0) throw new charls_error(ApiResult.InvalidCompressedData);
 
                 for (int i = 0; i < paddingToRead; ++i)
                 {
@@ -91,30 +90,27 @@ namespace CharLS
         }
 
         public void SetInfo(JlsParameters parameters)
-{
+        {
             _params = parameters;
-}
+        }
 
-public void SetRect(JlsRect rect)
-{
-    _rect = rect;
-}
+        public void SetRect(JlsRect rect)
+        {
+            _rect = rect;
+        }
 
         public void ReadStartOfScan(bool firstComponent)
         {
             if (!firstComponent)
             {
-                if (ReadByte() != 0xFF)
-                    throw charls_error(ApiResult.MissingJpegMarkerStart);
-                if (static_cast<JpegMarkerCode>(ReadByte()) != JpegMarkerCode.StartOfScan)
-                    throw charls_error(ApiResult.InvalidCompressedData);// TODO: throw more specific error code.
+                if (ReadByte() != 0xFF) throw new charls_error(ApiResult.MissingJpegMarkerStart);
+                if ((JpegMarkerCode)ReadByte() != JpegMarkerCode.StartOfScan) throw new charls_error(ApiResult.InvalidCompressedData); // TODO: throw more specific error code.
             }
             int length = ReadByte();
             length = length * 256 + ReadByte(); // TODO: do something with 'length' or remove it.
 
-            const int componentCount = ReadByte();
-            if (componentCount != 1 && componentCount != _params.components)
-                throw charls_error(ApiResult.ParameterValueNotSupported);
+            int componentCount = ReadByte();
+            if (componentCount != 1 && componentCount != _params.components) throw new charls_error(ApiResult.ParameterValueNotSupported);
 
             for (int i = 0; i < componentCount; ++i)
             {
@@ -122,56 +118,53 @@ public void SetRect(JlsRect rect)
                 ReadByte();
             }
             _params.allowedLossyError = ReadByte();
-            _params.interleaveMode = static_cast<InterleaveMode>(ReadByte());
-            if (!(_params.interleaveMode == InterleaveMode.None || _params.interleaveMode == InterleaveMode.Line || _params.interleaveMode == InterleaveMode.Sample))
-                throw charls_error(ApiResult.InvalidCompressedData);// TODO: throw more specific error code.
-            if (ReadByte() != 0)
-                throw charls_error(ApiResult.InvalidCompressedData);// TODO: throw more specific error code.
+            _params.interleaveMode = (InterleaveMode)ReadByte();
+            if (
+                !(_params.interleaveMode == InterleaveMode.None || _params.interleaveMode == InterleaveMode.Line
+                  || _params.interleaveMode == InterleaveMode.Sample)) throw new charls_error(ApiResult.InvalidCompressedData); // TODO: throw more specific error code.
+            if (ReadByte() != 0) throw new charls_error(ApiResult.InvalidCompressedData); // TODO: throw more specific error code.
 
             if (_params.stride == 0)
             {
-                const int width = _rect.Width != 0 ? _rect.Width : _params.width;
-                const int components = _params.interleaveMode == InterleaveMode.None ? 1 : _params.components;
+                int width = _rect.Width != 0 ? _rect.Width : _params.width;
+                int components = _params.interleaveMode == InterleaveMode.None ? 1 : _params.components;
                 _params.stride = components * width * ((_params.bitsPerSample + 7) / 8);
             }
         }
 
         public byte ReadByte()
         {
-            if (_byteStream.rawStream)
-                return static_cast<uint8_t>(_byteStream.rawStream->sbumpc());
+            if (_byteStream.rawStream != null) return (byte)_byteStream.rawStream.ReadByte();
 
-            if (_byteStream.count == 0)
-                throw charls_error(ApiResult.CompressedBufferTooSmall);
+            if (_byteStream.count == 0) throw new charls_error(ApiResult.CompressedBufferTooSmall);
 
-            const uint8_t value = _byteStream.rawData[0];
+            byte value = _byteStream.rawData.Array[0]; // TODO Incorrect, should point to current position in rawData!!!
             SkipBytes(_byteStream, 1);
             return value;
         }
 
         private JpegMarkerCode ReadNextMarker()
         {
-            auto byte = ReadByte();
-            if (byte != 0xFF)
+            var byt = ReadByte();
+            if (byt != 0xFF)
             {
-                ostringstream message;
-                message << setfill('0');
-                message << "Expected JPEG Marker start byte 0xFF but the byte value was 0x" << hex << uppercase << setw(2) << static_cast < unsigned int> (byte);
-                throw charls_error(ApiResult.MissingJpegMarkerStart, message.str());
+                string message = $"Expected JPEG Marker start byte 0xFF but the byte value was 0x{byt:X2}";
+                throw new charls_error(ApiResult.MissingJpegMarkerStart, message);
             }
 
             // Read all preceding 0xFF fill values until a non 0xFF value has been found. (see T.81, B.1.1.2)
             do
             {
-                byte = ReadByte();
-            } while (byte == 0xFF);
+                byt = ReadByte();
+            }
+            while (byt == 0xFF);
 
-            return static_cast<JpegMarkerCode>(byte);
+            return (JpegMarkerCode)byt;
         }
 
         private int ReadPresetParameters()
         {
-            const int type = ReadByte();
+            int type = ReadByte();
 
             switch (type)
             {
@@ -205,7 +198,7 @@ public void SetRect(JlsRect rect)
 
         private int ReadWord()
         {
-            const int i = ReadByte() * 256;
+            int i = ReadByte() * 256;
             return i + ReadByte();
         }
 
@@ -213,7 +206,7 @@ public void SetRect(JlsRect rect)
         {
             for (int i = 0; i < byteCount; ++i)
             {
-                dst.push_back(static_cast<char>(ReadByte()));
+                dst.Add(ReadByte());
             }
         }
 
@@ -253,17 +246,15 @@ public void SetRect(JlsRect rect)
                 case JpegMarkerCode.StartOfFrameProgressiveArithemtic:
                 case JpegMarkerCode.StartOfFrameLosslessArithemtic:
                     {
-                        ostringstream message;
-                        message << "JPEG encoding with marker " << static_cast < unsigned int> (marker) << " is not supported.";
-                        throw charls_error(ApiResult.UnsupportedEncoding, message.str());
+                        string message = $"JPEG encoding with marker {marker} is not supported.";
+                        throw new charls_error(ApiResult.UnsupportedEncoding, message);
                     }
 
                 // Other tags not supported (among which DNL DRI)
                 default:
                     {
-                        ostringstream message;
-                        message << "Unknown JPEG marker " << static_cast < unsigned int> (marker) << " encountered.";
-                        throw charls_error(ApiResult.UnknownJpegMarker, message.str());
+                        var message = $"Unknown JPEG marker {marker} encountered.";
+                        throw new charls_error(ApiResult.UnknownJpegMarker, message);
                     }
             }
         }
@@ -271,10 +262,9 @@ public void SetRect(JlsRect rect)
 
         private void ReadJfif()
         {
-            for (int i = 0; i < static_cast<int>(sizeof(jfifID)); i++)
+            for (int i = 0; i < jfifID.Length; i++)
             {
-                if (jfifID[i] != ReadByte())
-                    return;
+                if (jfifID[i] != ReadByte()) return;
             }
             _params.jfif.version = ReadWord();
 
@@ -286,10 +276,9 @@ public void SetRect(JlsRect rect)
             // thumbnail
             _params.jfif.Xthumbnail = ReadByte();
             _params.jfif.Ythumbnail = ReadByte();
-            if (_params.jfif.Xthumbnail > 0 && _params.jfif.thumbnail)
+            if (_params.jfif.Xthumbnail > 0 && _params.jfif.thumbnail != null)
             {
-                vector<char> tempbuff(static_cast<char*>(_params.jfif.thumbnail),
-                    static_cast<char*>(_params.jfif.thumbnail)+3 * _params.jfif.Xthumbnail * _params.jfif.Ythumbnail);
+                var tempbuff = new List<byte>(3 * _params.jfif.Xthumbnail * _params.jfif.Ythumbnail);
                 ReadNBytes(tempbuff, 3 * _params.jfif.Xthumbnail * _params.jfif.Ythumbnail);
             }
         }
@@ -303,20 +292,18 @@ public void SetRect(JlsRect rect)
 
         private int ReadColorXForm()
         {
-            vector<char> sourceTag;
+            var sourceTag = new List<byte>(4);
             ReadNBytes(sourceTag, 4);
+            if (!string.Equals(string.Join("", sourceTag.Select(b => (char)b)), "mrfx")) return 4;
 
-            if (strncmp(sourceTag.data(), "mrfx", 4) != 0)
-                return 4;
-
-            const auto xform = ReadByte();
+            var xform = ReadByte();
             switch (xform)
             {
-                case static_cast<uint8_t>(ColorTransformation.None):
-                case static_cast<uint8_t>(ColorTransformation.HP1):
-                case static_cast<uint8_t>(ColorTransformation.HP2):
-                case static_cast<uint8_t>(ColorTransformation.HP3):
-                    _params.colorTransformation = static_cast<ColorTransformation>(xform);
+                case (byte)ColorTransformation.None:
+                case (byte)ColorTransformation.HP1:
+                case (byte)ColorTransformation.HP2:
+                case (byte)ColorTransformation.HP3:
+                    _params.colorTransformation = (ColorTransformation)xform;
                     return 5;
 
                 case 4: // RgbAsYuvLossy (The standard lossy RGB to YCbCr transform used in JPEG.)
@@ -324,6 +311,31 @@ public void SetRect(JlsRect rect)
                     throw new charls_error(ApiResult.ImageTypeNotSupported);
                 default:
                     throw new charls_error(ApiResult.InvalidCompressedData);
+            }
+        }
+
+
+        private static ApiResult CheckParameterCoherent(JlsParameters parameters)
+        {
+            if (parameters.bitsPerSample < 2 || parameters.bitsPerSample > 16) return ApiResult.ParameterValueNotSupported;
+
+            if (parameters.interleaveMode < InterleaveMode.None || parameters.interleaveMode > InterleaveMode.Sample) return ApiResult.InvalidCompressedData;
+
+            switch (parameters.components)
+            {
+                case 4:
+                    return parameters.interleaveMode == InterleaveMode.Sample
+                               ? ApiResult.ParameterValueNotSupported
+                               : ApiResult.OK;
+                case 3:
+                    return ApiResult.OK;
+                case 0:
+                    return ApiResult.InvalidJlsParameters;
+
+                default:
+                    return parameters.interleaveMode != InterleaveMode.None
+                               ? ApiResult.ParameterValueNotSupported
+                               : ApiResult.OK;
             }
         }
 
