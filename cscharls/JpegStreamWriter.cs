@@ -15,7 +15,7 @@ namespace CharLS
     {
         private ByteStreamInfo _data;
 
-        private long _byteOffset;
+        private int _byteOffset;
 
         private int _lastCompenentIndex;
 
@@ -66,17 +66,17 @@ namespace CharLS
             AddSegment(JpegMarkerSegment.CreateColorTransformSegment(transformation));
         }
 
-        public long GetBytesWritten()
+        public int GetBytesWritten()
         {
             return _byteOffset;
         }
 
-        public long GetLength()
+        public int GetLength()
         {
             return _data.count - _byteOffset;
         }
 
-        public long Write(ByteStreamInfo info)
+        public int Write(ByteStreamInfo info)
         {
             _data = info;
 
@@ -146,7 +146,7 @@ namespace CharLS
             WriteByte((byte)marker);
         }
 
-        internal void Seek(long byteCount)
+        internal void Seek(int byteCount)
         {
             if (_data.rawStream != null) return;
 

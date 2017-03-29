@@ -17,14 +17,14 @@ namespace CharLS
         private Stream _byteStream;
 
         // decoding
-        private long _readCache;
+        private int _readCache;
 
         private int _validBits;
 
-        byte _position; // TODO e.g. pointer
+        private int _position; // TODO e.g. pointer
 
-        byte _nextFFPosition; // TODO e.g. pointer
+        private int _nextFFPosition; // TODO e.g. pointer
 
-        byte _endPosition; // TODO e.g. pointer
+        private int _endPosition; // TODO e.g. pointer
     }
 }

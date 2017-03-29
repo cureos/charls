@@ -25,7 +25,7 @@ namespace CharLS
             var codec = JlsCodecFactory<EncoderStrategy>().GetCodec(info, _params.custom);
             var processLine = codec.CreateProcess(_rawStreamInfo);
             ByteStreamInfo compressedData = streamWriter.OutputStream();
-            long cbyteWritten = codec.EncodeScan(processLine, compressedData);
+            var cbyteWritten = codec.EncodeScan(processLine, compressedData);
             streamWriter.Seek(cbyteWritten);*/
         }
     }

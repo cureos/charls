@@ -46,7 +46,7 @@ namespace CharLS
                 _rect.Height = _params.height;
             }
 
-            long bytesPerPlane = _rect.Width * _rect.Height * ((_params.bitsPerSample + 7) / 8);
+            var bytesPerPlane = _rect.Width * _rect.Height * ((_params.bitsPerSample + 7) / 8);
 
             if (rawPixels.rawStream == null && rawPixels.count < bytesPerPlane * _params.components) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
 
