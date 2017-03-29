@@ -32,23 +32,23 @@ namespace CharLS
             _bytesPerLine = parameters.stride;
         }
 
-        public void NewLineDecoded(ArraySegment<byte> pSrc, int pixelCount, int sourceStride)
+        public void NewLineDecoded(byte[] source, int sourceOffset, int sourceStride, int pixelCount)
         {
             if (!_canDecode) throw new InvalidOperationException("Raw data stream does not support writing");
-            _rawData.Write(pSrc.Array, pSrc.Offset, pixelCount * _bytesPerPixel);
+            _rawData.Write(source, sourceOffset, pixelCount * _bytesPerPixel);
         }
 
-        public void NewLineRequested(ArraySegment<byte> pDest, int pixelCount, int destStride)
+        public void NewLineRequested(byte[] dest, int destOffset, int destStride, int pixelCount)
         {
             if (!_canDecode) throw new InvalidOperationException("Raw data stream does not support reading");
 
             var bytesToRead = pixelCount * _bytesPerPixel;
-            var bytesRead = _rawData.Read(pDest.Array, pDest.Offset, bytesToRead);
+            var bytesRead = _rawData.Read(dest, destOffset, bytesToRead);
             if (bytesRead < bytesToRead) throw new charls_error(ApiResult.CompressedBufferTooSmall);
 
             if (_bytesPerPixel == 2)
             {
-                ByteSwap(pDest, bytesToRead);
+                ByteSwap(dest, destOffset, bytesToRead);
             }
 
             if (_bytesPerLine > bytesToRead)
@@ -57,7 +57,7 @@ namespace CharLS
             }
         }
 
-        private static void ByteSwap(ArraySegment<byte> data, int count)
+        private static void ByteSwap(byte[] data, int offset, int count)
         {
             if ((count & 1) != 0)
             {
@@ -65,15 +65,11 @@ namespace CharLS
                 throw new charls_error(ApiResult.InvalidJlsParameters, message);
             }
 
-            var array = data.Array;
-            var begin = data.Offset;
-            var end = begin + count;
-
-            for (var i = begin; i < end; i += 2)
+            for (var i = offset; i < offset + count; i += 2)
             {
-                var tmp = array[i];
-                array[i] = array[i + 1];
-                array[i + 1] = tmp;
+                var tmp = data[i];
+                data[i] = data[i + 1];
+                data[i + 1] = tmp;
             }
         }
     }

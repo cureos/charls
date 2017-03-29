@@ -13,9 +13,9 @@ namespace CharLS
     // it's possible to decode to memorystreams, but using rawData will always be faster.
     // 
     // Example use:
-    // ByteStreamInfo streamInfo = { fileStream.rdbuf() };
+    // ByteStreamInfo streamInfo = new ByteStreamInfo(fileStream);
     // or
-    // ByteStreamInfo streamInfo = FromByteArray( bytePtr, byteCount);
+    // ByteStreamInfo streamInfo = ByteStreamInfo.FromByteArray( bytePtr, byteCount);
     // 
     public class ByteStreamInfo
     {
@@ -27,6 +27,8 @@ namespace CharLS
 
         private readonly bool _canSeek;
 
+        private readonly Stream _rawStream;
+
         private readonly byte[] _rawData;
 
         private int _arrayPosition;
@@ -37,7 +39,7 @@ namespace CharLS
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            rawStream = stream;
+            _rawStream = stream;
             _rawData = null;
             _arrayPosition = 0;
 
@@ -51,7 +53,7 @@ namespace CharLS
         {
             if (bytes == null) throw new ArgumentNullException(nameof(bytes));
 
-            rawStream = null;
+            _rawStream = null;
             _rawData = bytes;
             _arrayPosition = 0;
 
@@ -63,16 +65,12 @@ namespace CharLS
             _arrayLength = length > 0 ? Math.Min(length, bytes.Length) : bytes.Length;
         }
 
-        public Stream rawStream { get; }
-
-        public ArraySegment<byte> rawData => new ArraySegment<byte>(_rawData, _arrayPosition, Count);
-
         public int Count
         {
             get
             {
                 if (!_canSeek) throw new InvalidOperationException();
-                return _isStream ? (int)rawStream.Length : _arrayLength;
+                return _isStream ? (int)_rawStream.Length : _arrayLength;
             }
         }
 
@@ -81,7 +79,7 @@ namespace CharLS
             get
             {
                 if (!_canSeek) throw new InvalidOperationException();
-                return _isStream ? (int)rawStream.Position : _arrayPosition;
+                return _isStream ? (int)_rawStream.Position : _arrayPosition;
             }
 
             set
@@ -89,7 +87,7 @@ namespace CharLS
                 if (!_canSeek) throw new InvalidOperationException();
                 if (_isStream)
                 {
-                    rawStream.Position = value;
+                    _rawStream.Position = value;
                 }
                 else
                 {
@@ -120,7 +118,7 @@ namespace CharLS
 
             if (_isStream)
             {
-                var val = rawStream.ReadByte();
+                var val = _rawStream.ReadByte();
                 if (val < 0) throw new EndOfStreamException();
                 return (byte)val;
             }
@@ -129,25 +127,27 @@ namespace CharLS
             return _rawData[_arrayPosition++];
         }
 
-        public byte[] ReadBytes(int count)
+        public int Read(byte[] bytes, int offset, int count)
         {
             if (!_canRead) throw new InvalidOperationException();
+            if (offset + count > bytes.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes), "Array too small for specified offset and count");
+            }
 
             if (_isStream)
             {
-                var bytes = new byte[count];
-                var bytesRead = rawStream.Read(bytes, 0, count);
-                if (bytesRead < count) throw new EndOfStreamException();
-                return bytes;
+                return _rawStream.Read(bytes, offset, count);
             }
-            else
+
+            count = Math.Min(count, _arrayLength - _arrayPosition);
+            if (count > 0)
             {
-                if (_arrayPosition + count >= _arrayLength) throw new EndOfStreamException();
-                var bytes = new byte[count];
-                Array.Copy(_rawData, _arrayPosition, bytes, 0, count);
+                Array.Copy(_rawData, _arrayPosition, bytes, offset, count);
                 _arrayPosition += count;
-                return bytes;
             }
+
+            return count;
         }
 
         public void WriteByte(byte value)
@@ -156,7 +156,7 @@ namespace CharLS
 
             if (_isStream)
             {
-                rawStream.WriteByte(value);
+                _rawStream.WriteByte(value);
             }
             else
             {
@@ -165,17 +165,17 @@ namespace CharLS
             }
         }
 
-        public void WriteBytes(byte[] bytes)
+        public void WriteBytes(byte[] bytes, int count = -1)
         {
             if (!_canWrite) throw new InvalidOperationException();
+            if (count < 0) count = bytes.Length;
 
             if (_isStream)
             {
-                rawStream.Write(bytes, 0, bytes.Length);
+                _rawStream.Write(bytes, 0, count);
             }
             else
             {
-                var count = bytes.Length;
                 if (_arrayPosition + count >= _arrayLength) throw new EndOfStreamException();
                 Array.Copy(bytes, 0, _rawData, _arrayPosition, count);
                 _arrayPosition += count;

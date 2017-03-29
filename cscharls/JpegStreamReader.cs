@@ -200,7 +200,10 @@ namespace CharLS
         private byte[] ReadBytes(int byteCount)
         {
             if (!_byteStream.Require(byteCount)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
-            return _byteStream.ReadBytes(byteCount);
+
+            var bytes = new byte[byteCount];
+            _byteStream.Read(bytes, 0, byteCount);
+            return bytes;
         }
 
         private int ReadMarker(JpegMarkerCode marker)

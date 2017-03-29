@@ -23,15 +23,15 @@ namespace CharLS
             _position = 0;
         }
 
-        public void NewLineDecoded(ArraySegment<byte> pSrc, int pixelCount, int sourceStride)
+        public void NewLineDecoded(byte[] source, int sourceOffset, int sourceStride, int pixelCount)
         {
-            Array.Copy(pSrc.Array, pSrc.Offset, _rawData, _position, pixelCount * _bytesPerPixel);
+            Array.Copy(source, sourceOffset, _rawData, _position, pixelCount * _bytesPerPixel);
             _position += _bytesPerLine;
         }
 
-        public void NewLineRequested(ArraySegment<byte> pDest, int pixelCount, int destStride)
+        public void NewLineRequested(byte[] dest, int destOffset, int destStride, int pixelCount)
         {
-            Array.Copy(_rawData, _position, pDest.Array,  pDest.Offset, pixelCount * _bytesPerPixel);
+            Array.Copy(_rawData, _position, dest,  destOffset, pixelCount * _bytesPerPixel);
             _position += _bytesPerLine;
         }
     }

@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ApiResult.cs" />
-    <Compile Include="ByteArraySegmentExtensions.cs" />
+    <Compile Include="ByteArrayExtensions.cs" />
     <Compile Include="ByteStreamInfo.cs" />
     <Compile Include="CContextRunMode.cs" />
     <Compile Include="charls_error.cs" />

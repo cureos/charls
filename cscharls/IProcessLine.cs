@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
-using System;
-
 namespace CharLS
 {
     //
@@ -15,8 +13,8 @@ namespace CharLS
     //
     public interface IProcessLine
     {
-        void NewLineDecoded(ArraySegment<byte> pSrc, int pixelCount, int sourceStride);
+        void NewLineDecoded(byte[] source, int sourceOffset, int sourceStride, int pixelCount);
 
-        void NewLineRequested(ArraySegment<byte> pDest, int pixelCount, int destStride);
+        void NewLineRequested(byte[] dest, int destOffset, int destStride, int pixelCount);
     }
 }
