@@ -19,9 +19,19 @@ namespace CharLS
     // 
     public class ByteStreamInfo
     {
-        private byte[] _rawData;
+        private readonly bool _isStream;
 
-        private int _position;
+        private readonly bool _canRead;
+
+        private readonly bool _canWrite;
+
+        private readonly bool _canSeek;
+
+        private readonly byte[] _rawData;
+
+        private int _arrayPosition;
+
+        private readonly int _arrayLength;
 
         public ByteStreamInfo(Stream stream)
         {
@@ -29,8 +39,12 @@ namespace CharLS
 
             rawStream = stream;
             _rawData = null;
-            _position = 0;
-            count = stream.CanSeek ? (int)stream.Length : -1;
+            _arrayPosition = 0;
+
+            _isStream = true;
+            _canRead = stream.CanRead;
+            _canWrite = stream.CanWrite;
+            _canSeek = stream.CanSeek;
         }
 
         public ByteStreamInfo(byte[] bytes, int length = -1)
@@ -39,27 +53,133 @@ namespace CharLS
 
             rawStream = null;
             _rawData = bytes;
-            _position = 0;
-            count = length > 0 ? length : bytes.Length;
+            _arrayPosition = 0;
+
+            _isStream = false;
+            _canRead = true;
+            _canWrite = true;
+            _canSeek = true;
+
+            _arrayLength = length > 0 ? Math.Min(length, bytes.Length) : bytes.Length;
         }
 
         public Stream rawStream { get; }
 
-        public ArraySegment<byte> rawData => new ArraySegment<byte>(_rawData, _position, count);
+        public ArraySegment<byte> rawData => new ArraySegment<byte>(_rawData, _arrayPosition, Count);
 
-        public int count { get; private set; }
+        public int Count
+        {
+            get
+            {
+                if (!_canSeek) throw new InvalidOperationException();
+                return _isStream ? (int)rawStream.Length : _arrayLength;
+            }
+        }
+
+        public int Position
+        {
+            get
+            {
+                if (!_canSeek) throw new InvalidOperationException();
+                return _isStream ? (int)rawStream.Position : _arrayPosition;
+            }
+
+            set
+            {
+                if (!_canSeek) throw new InvalidOperationException();
+                if (_isStream)
+                {
+                    rawStream.Position = value;
+                }
+                else
+                {
+                    _arrayPosition = value;
+                }
+            }
+        }
 
         public static ByteStreamInfo FromByteArray(byte[] bytes, int count)
         {
             return new ByteStreamInfo(bytes, count);
         }
 
-        public void Seek(int skip)
+        public void Seek(int offset)
         {
-            if (_rawData == null) return;
+            Position += offset;
+        }
 
-            _position += skip;
-            count -= skip;
+        public bool Require(int count)
+        {
+            if (_isStream) return true;
+            return _arrayPosition + count <= _arrayLength;
+        }
+
+        public byte ReadByte()
+        {
+            if (!_canRead) throw new InvalidOperationException();
+
+            if (_isStream)
+            {
+                var val = rawStream.ReadByte();
+                if (val < 0) throw new EndOfStreamException();
+                return (byte)val;
+            }
+
+            if (_arrayPosition + 1 >= _arrayLength) throw new EndOfStreamException();
+            return _rawData[_arrayPosition++];
+        }
+
+        public byte[] ReadBytes(int count)
+        {
+            if (!_canRead) throw new InvalidOperationException();
+
+            if (_isStream)
+            {
+                var bytes = new byte[count];
+                var bytesRead = rawStream.Read(bytes, 0, count);
+                if (bytesRead < count) throw new EndOfStreamException();
+                return bytes;
+            }
+            else
+            {
+                if (_arrayPosition + count >= _arrayLength) throw new EndOfStreamException();
+                var bytes = new byte[count];
+                Array.Copy(_rawData, _arrayPosition, bytes, 0, count);
+                _arrayPosition += count;
+                return bytes;
+            }
+        }
+
+        public void WriteByte(byte value)
+        {
+            if (!_canWrite) throw new InvalidOperationException();
+
+            if (_isStream)
+            {
+                rawStream.WriteByte(value);
+            }
+            else
+            {
+                if (_arrayPosition + 1 >= _arrayLength) throw new EndOfStreamException();
+                _rawData[_arrayPosition++] = value;
+            }
+        }
+
+        public void WriteBytes(byte[] bytes)
+        {
+            if (!_canWrite) throw new InvalidOperationException();
+
+            if (_isStream)
+            {
+                rawStream.Write(bytes, 0, bytes.Length);
+            }
+            else
+            {
+                var count = bytes.Length;
+                if (_arrayPosition + count >= _arrayLength) throw new EndOfStreamException();
+                Array.Copy(bytes, 0, _rawData, _arrayPosition, count);
+                _arrayPosition += count;
+            }
         }
     }
 }

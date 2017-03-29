@@ -15,17 +15,14 @@ namespace CharLS
     {
         private ByteStreamInfo _data;
 
-        private int _byteOffset;
-
-        private int _lastCompenentIndex;
+        private int _lastComponentIndex;
 
         private IList<IJpegSegment> _segments;
 
         public JpegStreamWriter()
         {
             _data = null;
-            _byteOffset = 0;
-            _lastCompenentIndex = 0;
+            _lastComponentIndex = 0;
             _segments = new List<IJpegSegment>();
         }
 
@@ -49,11 +46,11 @@ namespace CharLS
             }
 
             // Note: it is a common practice to start to count components by index 1.
-            _lastCompenentIndex += 1;
+            _lastComponentIndex += 1;
             int componentCount = parameters.interleaveMode == InterleaveMode.None ? 1 : parameters.components;
             AddSegment(
                 JpegMarkerSegment.CreateStartOfScanSegment(
-                    _lastCompenentIndex,
+                    _lastComponentIndex,
                     componentCount,
                     parameters.allowedLossyError,
                     parameters.interleaveMode));
@@ -68,12 +65,12 @@ namespace CharLS
 
         public int GetBytesWritten()
         {
-            return _byteOffset;
+            return _data.Position;
         }
 
         public int GetLength()
         {
-            return _data.count - _byteOffset;
+            return _data.Count - _data.Position;
         }
 
         public int Write(ByteStreamInfo info)
@@ -89,55 +86,36 @@ namespace CharLS
 
             WriteMarker(JpegMarkerCode.EndOfImage);
 
-            return _byteOffset;
+            return _data.Position;
         }
 
-        internal byte GetPos()
+        internal int GetPos()
         {
-            return _data.rawData.Array[_byteOffset];
+            return _data.Position;
         }
 
         internal ByteStreamInfo OutputStream()
         {
-            ByteStreamInfo data = _data;
-            data.Seek(_byteOffset);
-            return data;
+            return _data;
         }
 
         internal void WriteByte(byte val)
         {
-            if (_data.rawStream != null)
-            {
-                _data.rawStream.WriteByte(val);
-            }
-            else
-            {
-                if (_byteOffset >= _data.count) throw new charls_error(ApiResult.CompressedBufferTooSmall);
-
-                _data.rawData.Array[_byteOffset++] = val;
-            }
+            if (!_data.Require(1)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            _data.WriteByte(val);
         }
 
         internal void WriteBytes(byte[] bytes)
         {
-            if (_data.rawStream != null)
-            {
-                _data.rawStream.Write(bytes, 0, bytes.Length);
-            }
-            else
-            {
-                var length = bytes.Length;
-                if (length > _data.count) throw new charls_error(ApiResult.CompressedBufferTooSmall);
-
-                Array.Copy(bytes, 0, _data.rawData.Array, (int)_byteOffset, length);
-                _byteOffset += length;
-            }
+            if (!_data.Require(bytes.Length)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            _data.WriteBytes(bytes);
         }
 
         internal void WriteWord(ushort value)
         {
-            WriteByte((byte)(value / 0x100));
-            WriteByte((byte)(value % 0x100));
+            if (!_data.Require(2)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            _data.WriteByte((byte)(value / 0x100));
+            _data.WriteByte((byte)(value % 0x100));
         }
 
         internal void WriteMarker(JpegMarkerCode marker)
@@ -148,9 +126,7 @@ namespace CharLS
 
         internal void Seek(int byteCount)
         {
-            if (_data.rawStream != null) return;
-
-            _byteOffset += byteCount;
+            _data.Seek(byteCount);
         }
 
         private static bool IsDefault(JpegLSPresetCodingParameters custom)

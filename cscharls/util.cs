@@ -66,10 +66,5 @@ namespace CharLS
 
             return i;
         }
-
-        public static void SkipBytes(ByteStreamInfo streamInfo, int count)
-        {
-            streamInfo.Seek(count);
-        }
     }
 }

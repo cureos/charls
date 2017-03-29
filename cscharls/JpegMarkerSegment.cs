@@ -83,14 +83,14 @@ namespace CharLS
 
             // Create a JPEG APP0 segment in the JPEG File Interchange Format (JFIF), v1.02
             var content = new List<byte> { (byte)'J', (byte)'F', (byte)'I', (byte)'F', (byte)'\0' };
-            push_back(content, (ushort)(jfif.version));
-            content.Add((byte)(jfif.units));
-            push_back(content, (ushort)(jfif.Xdensity));
-            push_back(content, (ushort)(jfif.Ydensity));
+            push_back(content, (ushort)jfif.version);
+            content.Add((byte)jfif.units);
+            push_back(content, (ushort)jfif.Xdensity);
+            push_back(content, (ushort)jfif.Ydensity);
 
             // thumbnail
-            content.Add((byte)(jfif.Xthumbnail));
-            content.Add((byte)(jfif.Ythumbnail));
+            content.Add((byte)jfif.Xthumbnail);
+            content.Add((byte)jfif.Ythumbnail);
             if (jfif.Xthumbnail > 0)
             {
                 if (jfif.thumbnail == null)
@@ -116,11 +116,11 @@ namespace CharLS
             // Parameter ID. 0x01 = JPEG-LS preset coding parameters.
             content.Add(1);
 
-            push_back(content, (ushort)(presets.MaximumSampleValue));
-            push_back(content, (ushort)(presets.Threshold1));
-            push_back(content, (ushort)(presets.Threshold2));
-            push_back(content, (ushort)(presets.Threshold3));
-            push_back(content, (ushort)(presets.ResetValue));
+            push_back(content, (ushort)presets.MaximumSampleValue);
+            push_back(content, (ushort)presets.Threshold1);
+            push_back(content, (ushort)presets.Threshold2);
+            push_back(content, (ushort)presets.Threshold3);
+            push_back(content, (ushort)presets.ResetValue);
 
             return new JpegMarkerSegment(JpegMarkerCode.JpegLSPresetParameters, content);
         }
@@ -134,7 +134,7 @@ namespace CharLS
         {
             return new JpegMarkerSegment(
                 JpegMarkerCode.ApplicationData8,
-                new[] { (byte)'m', (byte)'r', (byte)'f', (byte)'x', (byte)(transformation) });
+                new[] { (byte)'m', (byte)'r', (byte)'f', (byte)'x', (byte)transformation });
         }
 
 
@@ -157,15 +157,15 @@ namespace CharLS
             // Create a Scan Header as defined in T.87, C.2.3 and T.81, B.2.3
             var content = new List<byte>();
 
-            content.Add((byte)(componentCount));
+            content.Add((byte)componentCount);
             for (var i = 0; i < componentCount; ++i)
             {
                 content.Add((byte)(componentIndex + i));
                 content.Add(0); // Mapping table selector (0 = no table)
             }
 
-            content.Add((byte)(allowedLossyError)); // NEAR parameter
-            content.Add((byte)(interleaveMode)); // ILV parameter
+            content.Add((byte)allowedLossyError); // NEAR parameter
+            content.Add((byte)interleaveMode); // ILV parameter
             content.Add(0); // transformation
 
             return new JpegMarkerSegment(JpegMarkerCode.StartOfScan, content);

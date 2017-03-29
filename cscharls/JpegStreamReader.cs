@@ -48,7 +48,7 @@ namespace CharLS
 
             var bytesPerPlane = _rect.Width * _rect.Height * ((_params.bitsPerSample + 7) / 8);
 
-            if (rawPixels.rawStream == null && rawPixels.count < bytesPerPlane * _params.components) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
+            if (!rawPixels.Require(bytesPerPlane * _params.components)) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
 
             int componentIndex = 0;
 
@@ -56,10 +56,11 @@ namespace CharLS
             {
                 ReadStartOfScan(componentIndex == 0);
 
+                var currentPosition = rawPixels.Position;
                 /*var qcodec = JlsCodecFactory<DecoderStrategy>().GetCodec(_params, _params.custom);
                 var processLine = qcodec.CreateProcess(rawPixels);
                 qcodec.DecodeScan(processLine, _rect, _byteStream);*/
-                SkipBytes(rawPixels, bytesPerPlane);
+                rawPixels.Position = currentPosition + bytesPerPlane;
 
                 if (_params.interleaveMode != InterleaveMode.None) return;
 
@@ -106,8 +107,7 @@ namespace CharLS
                 if (ReadByte() != 0xFF) throw new charls_error(ApiResult.MissingJpegMarkerStart);
                 if ((JpegMarkerCode)ReadByte() != JpegMarkerCode.StartOfScan) throw new charls_error(ApiResult.InvalidCompressedData); // TODO: throw more specific error code.
             }
-            int length = ReadByte();
-            length = length * 256 + ReadByte(); // TODO: do something with 'length' or remove it.
+            int length = ReadWord(); // TODO: do something with 'length' or remove it.
 
             int componentCount = ReadByte();
             if (componentCount != 1 && componentCount != _params.components) throw new charls_error(ApiResult.ParameterValueNotSupported);
@@ -134,37 +134,32 @@ namespace CharLS
 
         public byte ReadByte()
         {
-            if (_byteStream.rawStream != null) return (byte)_byteStream.rawStream.ReadByte();
-
-            if (_byteStream.count == 0) throw new charls_error(ApiResult.CompressedBufferTooSmall);
-
-            byte value = _byteStream.rawData.Array[0]; // TODO Incorrect, should point to current position in rawData!!!
-            SkipBytes(_byteStream, 1);
-            return value;
+            if (!_byteStream.Require(1)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            return _byteStream.ReadByte();
         }
 
         private JpegMarkerCode ReadNextMarker()
         {
-            var byt = ReadByte();
-            if (byt != 0xFF)
+            var marker = ReadByte();
+            if (marker != 0xFF)
             {
-                string message = $"Expected JPEG Marker start byte 0xFF but the byte value was 0x{byt:X2}";
+                string message = $"Expected JPEG Marker start byte 0xFF but the byte value was 0x{marker:X2}";
                 throw new charls_error(ApiResult.MissingJpegMarkerStart, message);
             }
 
             // Read all preceding 0xFF fill values until a non 0xFF value has been found. (see T.81, B.1.1.2)
             do
             {
-                byt = ReadByte();
+                marker = ReadByte();
             }
-            while (byt == 0xFF);
+            while (marker == 0xFF);
 
-            return (JpegMarkerCode)byt;
+            return (JpegMarkerCode)marker;
         }
 
         private int ReadPresetParameters()
         {
-            int type = ReadByte();
+            var type = ReadByte();
 
             switch (type)
             {
@@ -196,18 +191,16 @@ namespace CharLS
             return 6;
         }
 
-        private int ReadWord()
+        private ushort ReadWord()
         {
-            int i = ReadByte() * 256;
-            return i + ReadByte();
+            var i = ReadByte() * 256;
+            return (ushort)(i + ReadByte());
         }
 
-        private void ReadNBytes(IList<byte> dst, int byteCount)
+        private byte[] ReadBytes(int byteCount)
         {
-            for (int i = 0; i < byteCount; ++i)
-            {
-                dst.Add(ReadByte());
-            }
+            if (!_byteStream.Require(byteCount)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            return _byteStream.ReadBytes(byteCount);
         }
 
         private int ReadMarker(JpegMarkerCode marker)
@@ -278,8 +271,7 @@ namespace CharLS
             _params.jfif.Ythumbnail = ReadByte();
             if (_params.jfif.Xthumbnail > 0 && _params.jfif.thumbnail != null)
             {
-                var tempbuff = new List<byte>(3 * _params.jfif.Xthumbnail * _params.jfif.Ythumbnail);
-                ReadNBytes(tempbuff, 3 * _params.jfif.Xthumbnail * _params.jfif.Ythumbnail);
+                ReadBytes(3 * _params.jfif.Xthumbnail * _params.jfif.Ythumbnail);
             }
         }
 
@@ -292,9 +284,8 @@ namespace CharLS
 
         private int ReadColorXForm()
         {
-            var sourceTag = new List<byte>(4);
-            ReadNBytes(sourceTag, 4);
-            if (!string.Equals(string.Join("", sourceTag.Select(b => (char)b)), "mrfx")) return 4;
+            var sourceTag = ReadBytes(4);
+            if (!string.Equals(StringConvert(sourceTag), "mrfx")) return 4;
 
             var xform = ReadByte();
             switch (xform)
@@ -313,7 +304,6 @@ namespace CharLS
                     throw new charls_error(ApiResult.InvalidCompressedData);
             }
         }
-
 
         private static ApiResult CheckParameterCoherent(JlsParameters parameters)
         {
@@ -339,5 +329,9 @@ namespace CharLS
             }
         }
 
+        private static string StringConvert(byte[] bytes)
+        {
+            return string.Join("", bytes.Select(b => (char)b));
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace CharLS
     /// <summary>
     /// Defines the interleave mode for multi-component (color) pixel data.
     /// </summary>
-    public enum InterleaveMode
+    public enum InterleaveMode : byte
     {
         /// <summary>
         /// The data is encoded and stored as component for component: RRRGGGBBB.
