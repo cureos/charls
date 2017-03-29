@@ -43,14 +43,17 @@
     <Compile Include="CTable.cs" />
     <Compile Include="DecoderStrategy.cs" />
     <Compile Include="DefaultTraits.cs" />
+    <Compile Include="EncoderStrategy.cs" />
     <Compile Include="FromBigEndian.cs" />
     <Compile Include="IColorTransform.cs" />
     <Compile Include="IJpegSegment.cs" />
     <Compile Include="IProcessLine.cs" />
+    <Compile Include="IStrategy.cs" />
     <Compile Include="ITraits.cs" />
     <Compile Include="InterleaveMode.cs" />
     <Compile Include="ITriplet.cs" />
     <Compile Include="JfifParameters.cs" />
+    <Compile Include="JlsCodec.cs" />
     <Compile Include="JlsContext.cs" />
     <Compile Include="JlsParameters.cs" />
     <Compile Include="JlsRect.cs" />
