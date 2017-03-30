@@ -141,14 +141,15 @@ namespace CharLS
 
             if (parameters.components < 1 || parameters.components > 255) throw new charls_error(ApiResult.InvalidJlsParameters, "components needs to be in the range [1, 255]");
 
-            if (uncompressedStream.rawData)
+            if (
+                !uncompressedStream.Require(
+                    false,
+                    parameters.height * parameters.width * parameters.components
+                    * (parameters.bitsPerSample > 8 ? 2 : 1)))
             {
-                if (uncompressedStream.Count
-                    < parameters.height * parameters.width * parameters.components
-                    * (parameters.bitsPerSample > 8 ? 2 : 1))
-                    throw new charls_error(
-                        ApiResult.InvalidJlsParameters,
-                        "uncompressed size does not match with the other parameters");
+                throw new charls_error(
+                    ApiResult.InvalidJlsParameters,
+                    "uncompressed size does not match with the other parameters");
             }
 
             switch (parameters.components)

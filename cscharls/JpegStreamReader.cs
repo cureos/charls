@@ -48,7 +48,7 @@ namespace CharLS
 
             var bytesPerPlane = _rect.Width * _rect.Height * ((_params.bitsPerSample + 7) / 8);
 
-            if (!rawPixels.Require(bytesPerPlane * _params.components)) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
+            if (!rawPixels.Require(true, bytesPerPlane * _params.components)) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
 
             int componentIndex = 0;
 
@@ -134,7 +134,7 @@ namespace CharLS
 
         public byte ReadByte()
         {
-            if (!_byteStream.Require(1)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            if (!_byteStream.Require(true, 1)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
             return _byteStream.ReadByte();
         }
 
@@ -199,7 +199,7 @@ namespace CharLS
 
         private byte[] ReadBytes(int byteCount)
         {
-            if (!_byteStream.Require(byteCount)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            if (!_byteStream.Require(true, byteCount)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
 
             var bytes = new byte[byteCount];
             _byteStream.Read(bytes, 0, byteCount);

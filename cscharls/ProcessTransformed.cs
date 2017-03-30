@@ -43,7 +43,7 @@ namespace CharLS
         public void NewLineRequested(byte[] dest, int destOffset, int destStride, int pixelCount)
         {
             var bytesToRead = pixelCount * _params.components * _sizeofSample;
-            if (!_rawPixels.Require(bytesToRead))
+            if (!_rawPixels.Require(true, bytesToRead))
             {
                 var message = $"Not enough bytes available in input buffer, need to read {bytesToRead}";
                 throw new charls_error(ApiResult.UncompressedBufferTooSmall, message);

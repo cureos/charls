@@ -68,11 +68,6 @@ namespace CharLS
             return _data.Position;
         }
 
-        public int GetLength()
-        {
-            return _data.Count - _data.Position;
-        }
-
         public int Write(ByteStreamInfo info)
         {
             _data = info;
@@ -89,11 +84,6 @@ namespace CharLS
             return _data.Position;
         }
 
-        internal int GetPos()
-        {
-            return _data.Position;
-        }
-
         internal ByteStreamInfo OutputStream()
         {
             return _data;
@@ -101,19 +91,19 @@ namespace CharLS
 
         internal void WriteByte(byte val)
         {
-            if (!_data.Require(1)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            if (!_data.Require(false, 1)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
             _data.WriteByte(val);
         }
 
         internal void WriteBytes(byte[] bytes)
         {
-            if (!_data.Require(bytes.Length)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            if (!_data.Require(false, bytes.Length)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
             _data.WriteBytes(bytes);
         }
 
         internal void WriteWord(ushort value)
         {
-            if (!_data.Require(2)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
+            if (!_data.Require(false, 2)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
             _data.WriteByte((byte)(value / 0x100));
             _data.WriteByte((byte)(value % 0x100));
         }

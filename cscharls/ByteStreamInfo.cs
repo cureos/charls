@@ -65,15 +65,6 @@ namespace CharLS
             _arrayLength = length > 0 ? Math.Min(length, bytes.Length) : bytes.Length;
         }
 
-        public int Count
-        {
-            get
-            {
-                if (!_canSeek) throw new InvalidOperationException();
-                return _isStream ? (int)_rawStream.Length : _arrayLength;
-            }
-        }
-
         public int Position
         {
             get
@@ -96,20 +87,16 @@ namespace CharLS
             }
         }
 
-        public static ByteStreamInfo FromByteArray(byte[] bytes, int count)
-        {
-            return new ByteStreamInfo(bytes, count);
-        }
-
         public void Seek(int offset)
         {
             Position += offset;
         }
 
-        public bool Require(int count)
+        public bool Require(bool read, int count)
         {
-            if (_isStream) return true;
-            return _arrayPosition + count <= _arrayLength;
+            var isModeSupported = read ? _canSeek && _canRead : _canWrite;
+            if (_isStream) return isModeSupported;
+            return isModeSupported && _arrayPosition + count <= _arrayLength;
         }
 
         public byte ReadByte()
