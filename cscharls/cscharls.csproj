@@ -54,6 +54,7 @@
     <Compile Include="ITriplet.cs" />
     <Compile Include="JfifParameters.cs" />
     <Compile Include="JlsCodec.cs" />
+    <Compile Include="JlsCodecFactory.cs" />
     <Compile Include="JlsContext.cs" />
     <Compile Include="JlsParameters.cs" />
     <Compile Include="JlsRect.cs" />

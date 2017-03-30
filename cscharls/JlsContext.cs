@@ -17,8 +17,6 @@ namespace CharLS
 
         private int B;
 
-        private short C;
-
         private short N;
 
         public JlsContext()
@@ -35,6 +33,7 @@ namespace CharLS
             N = 1;
         }
 
+        public short C { get; private set; }
 
         public int GetErrorCorrection(int k)
         {
@@ -83,8 +82,10 @@ namespace CharLS
                 {
                     b = 0;
                 }
+
                 C += (short)(C < 127 ? 1 : 0);
             }
+
             B = b;
 
             Debug.Assert(N != 0);

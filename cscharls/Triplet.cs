@@ -26,6 +26,13 @@ namespace CharLS
             _v3 = x3;
         }
 
+        public Triplet(TSample x1, TSample x2, TSample x3)
+        {
+            _v1 = (int)(object)x1;
+            _v2 = (int)(object)x2;
+            _v3 = (int)(object)x3;
+        }
+
         public int v1 => _v1;
 
         public int v2 => _v2;

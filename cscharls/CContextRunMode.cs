@@ -12,8 +12,6 @@ namespace CharLS
         // Note: members are sorted based on their size.
         private int A;
 
-        private int _nRItype;
-
         private byte _nReset;
 
         private byte N;
@@ -28,6 +26,8 @@ namespace CharLS
             N = 1;
             Nn = 0;
         }
+
+        public int _nRItype { get; }
 
         public int GetGolomb()
         {

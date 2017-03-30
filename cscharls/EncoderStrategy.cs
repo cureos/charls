@@ -1,18 +1,19 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
+using System;
 using System.Diagnostics;
 using System.IO;
 
+using static CharLS.util;
+
 namespace CharLS
 {
-    public class EncoderStrategy<TSample> : IStrategy<TSample> where TSample : struct
+    public class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IStrategy where TSample : struct
     {
-        internal DecoderStrategy<TSample> _qdecoder;
+        private DecoderStrategy<TSample, TPixel> _qdecoder;
 
-        internal JlsParameters _params;
-
-        internal IProcessLine _processLine;
+        private IProcessLine _processLine;
 
         private uint _bitBuffer;
 
@@ -31,9 +32,9 @@ namespace CharLS
 
         Stream _compressedStream;
 
-        public EncoderStrategy()
+        public EncoderStrategy(ITraits<TSample, TPixel> inTraits, JlsParameters parameters)
+            : base(inTraits, parameters)
         {
-            _params = null;
             _bitBuffer = 0;
             _freeBitCount = sizeof(uint) * 8;
             _compressedLength = 0;
@@ -44,18 +45,32 @@ namespace CharLS
             _compressedStream = null;
         }
 
-        public JlsParameters Parameters { get; set; }
+        // Setup codec for encoding and calls DoScan
+        public int EncodeScan(IProcessLine processLine, ByteStreamInfo compressedData)
+        {
+            _processLine = processLine;
 
-        public void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride)
+            Init(compressedData);
+            DoScan();
+
+            return GetLength();
+        }
+
+        public void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData)
+        {
+            throw new NotSupportedException($"{nameof(EncoderStrategy<TSample, TPixel>)} does not support decoding.");
+        }
+
+        protected override void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride)
         {
             _processLine.NewLineRequested(ptypeBuffer, 0, pixelStride, cpixel);
         }
 
-        public void OnLineEnd(int cpixel, byte[] ptypeBuffer, int pixelStride)
+        protected override void OnLineEnd(int cpixel, byte[] ptypeBuffer, int pixelStride)
         {
         }
 
-        public void Init(ByteStreamInfo compressedStream)
+        protected override void Init(ByteStreamInfo compressedStream)
         {
             _freeBitCount = sizeof(uint) * 8;
             _bitBuffer = 0;
@@ -74,7 +89,7 @@ namespace CharLS
             }
         }
 
-        public void EndScan()
+        protected override void EndScan()
         {
             Flush();
 
@@ -91,21 +106,79 @@ namespace CharLS
             }
         }
 
-        public TSample DoRegular(int Qs, int x, int pred)
+        protected override TSample DoRegular(int Qs, int x, int pred)
         {
-            const int sign = BitWiseSign(Qs);
-            JlsContext & ctx = _contexts[ApplySign(Qs, sign)];
-            const int k = ctx.GetGolomb();
-            const int Px = traits.CorrectPrediction(pred + ApplySign(ctx.C, sign));
-            const int ErrVal = traits.ComputeErrVal(ApplySign(x - Px, sign));
+            int sign = BitWiseSign(Qs);
+            JlsContext ctx = _contexts[ApplySign(Qs, sign)];
+            int k = ctx.GetGolomb();
+            int Px = traits.CorrectPrediction(pred + ApplySign(ctx.C, sign));
+            int ErrVal = traits.ComputeErrVal(ApplySign(x - Px, sign));
 
             EncodeMappedValue(k, GetMappedErrVal(ctx.GetErrorCorrection(k | traits.NEAR) ^ ErrVal), traits.LIMIT);
             ctx.UpdateVariables(ErrVal, traits.NEAR, traits.RESET);
             Debug.Assert(traits.IsNear(traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign)), x));
-            return static_cast<SAMPLE>(traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign)));
+            return traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign));
         }
 
-        internal void AppendToBitStream(int bits, int bitCount)
+        protected override int DoRunMode(int index)
+        {
+            const int ctypeRem = _width - index;
+            TPixel* ptypeCurX = _currentLine + index;
+            TPixel* ptypePrevX = _previousLine + index;
+
+            const TPixel Ra = ptypeCurX[-1];
+
+            int runLength = 0;
+
+            while (traits.IsNear(ptypeCurX[runLength], Ra))
+            {
+                ptypeCurX[runLength] = Ra;
+                runLength++;
+
+                if (runLength == ctypeRem)
+                    break;
+            }
+
+            EncodeRunPixels(runLength, runLength == ctypeRem);
+
+            if (runLength == ctypeRem)
+                return runLength;
+
+            ptypeCurX[runLength] = EncodeRIPixel(ptypeCurX[runLength], Ra, ptypePrevX[runLength]);
+            DecrementRunIndex();
+            return runLength + 1;
+        }
+
+        // Encoding of golomb codes
+        private void EncodeMappedValue(int k, int mappedError, int limit)
+        {
+            int highbits = mappedError >> k;
+
+            if (highbits < limit - traits.qbpp - 1)
+            {
+                if (highbits + 1 > 31)
+                {
+                    AppendToBitStream(0, highbits / 2);
+                    highbits = highbits - highbits / 2;
+                }
+                AppendToBitStream(1, highbits + 1);
+                AppendToBitStream((mappedError & ((1 << k) - 1)), k);
+                return;
+            }
+
+            if (limit - traits.qbpp > 31)
+            {
+                AppendToBitStream(0, 31);
+                AppendToBitStream(1, limit - traits.qbpp - 31);
+            }
+            else
+            {
+                AppendToBitStream(1, limit - traits.qbpp);
+            }
+            AppendToBitStream((mappedError - 1) & ((1 << traits.qbpp) - 1), traits.qbpp);
+        }
+
+        private void AppendToBitStream(int bits, int bitCount)
         {
             Debug.Assert(bitCount < 32 && bitCount >= 0);
             Debug.Assert(
@@ -138,7 +211,7 @@ namespace CharLS
             }
         }
 
-        internal void OverFlow()
+        private void OverFlow()
         {
             if (_compressedStream == null) throw new charls_error(ApiResult.CompressedBufferTooSmall);
 
@@ -153,7 +226,7 @@ namespace CharLS
             _compressedLength = _buffer.size();
         }
 
-        internal void Flush()
+        private void Flush()
         {
             if (_compressedLength < 4)
             {
@@ -185,14 +258,84 @@ namespace CharLS
             }
         }
 
-        internal int GetLength()
+        private int GetLength()
         {
             return _bytesWritten - (_freeBitCount - 32) / 8;
         }
 
-        internal void AppendOnesToBitStream(int length)
+        private void AppendOnesToBitStream(int length)
         {
             AppendToBitStream((1 << length) - 1, length);
+        }
+
+        // RI = Run interruption: functions that handle the sample terminating a run.
+
+        private void EncodeRIError(CContextRunMode ctx, int Errval)
+        {
+            int k = ctx.GetGolomb();
+            bool map = ctx.ComputeMap(Errval, k);
+            int EMErrval = 2 * Math.Abs(Errval) - ctx._nRItype - (map ? 1 : 0);
+
+            Debug.Assert(Errval == ctx.ComputeErrVal(EMErrval + ctx._nRItype, k));
+            EncodeMappedValue(k, EMErrval, traits.LIMIT - J[_RUNindex] - 1);
+            ctx.UpdateVariables(Errval, EMErrval);
+        }
+
+
+        private ITriplet<TSample> EncodeRIPixel(Triplet<TSample> x, Triplet<TSample> Ra, Triplet<TSample> Rb)
+        {
+            int errval1 = traits.ComputeErrVal(Sign(Rb.v1 - Ra.v1) * (x.v1 - Rb.v1));
+            EncodeRIError(_contextRunmode[0], errval1);
+
+            int errval2 = traits.ComputeErrVal(Sign(Rb.v2 - Ra.v2) * (x.v2 - Rb.v2));
+            EncodeRIError(_contextRunmode[0], errval2);
+
+            int errval3 = traits.ComputeErrVal(Sign(Rb.v3 - Ra.v3) * (x.v3 - Rb.v3));
+            EncodeRIError(_contextRunmode[0], errval3);
+
+            return new Triplet<TSample>(traits.ComputeReconstructedSample(Rb.v1, errval1 * Sign(Rb.v1 - Ra.v1)),
+                                   traits.ComputeReconstructedSample(Rb.v2, errval2 * Sign(Rb.v2 - Ra.v2)),
+                                   traits.ComputeReconstructedSample(Rb.v3, errval3 * Sign(Rb.v3 - Ra.v3)));
+        }
+
+        private TSample EncodeRIPixel(int x, int Ra, int Rb)
+        {
+            if (Math.Abs(Ra - Rb) <= traits.NEAR)
+            {
+                int ErrVal = traits.ComputeErrVal(x - Ra);
+                EncodeRIError(_contextRunmode[1], ErrVal);
+                return traits.ComputeReconstructedSample(Ra, ErrVal);
+            }
+            else
+            {
+                int ErrVal = traits.ComputeErrVal((x - Rb) * Sign(Rb - Ra));
+                EncodeRIError(_contextRunmode[0], ErrVal);
+                return traits.ComputeReconstructedSample(Rb, ErrVal * Sign(Rb - Ra));
+            }
+        }
+
+        // RunMode: Functions that handle run-length encoding
+
+        private void EncodeRunPixels(int runLength, bool endOfLine)
+        {
+            while (runLength >= 1 << J[_RUNindex])
+            {
+                AppendOnesToBitStream(1);
+                runLength = runLength - 1 << J[_RUNindex];
+                IncrementRunIndex();
+            }
+
+            if (endOfLine)
+            {
+                if (runLength != 0)
+                {
+                    AppendOnesToBitStream(1);
+                }
+            }
+            else
+            {
+                AppendToBitStream(runLength, J[_RUNindex] + 1); // leading 0 + actual remaining length
+            }
         }
     }
 }

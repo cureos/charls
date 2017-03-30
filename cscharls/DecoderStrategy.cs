@@ -1,18 +1,19 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
+using System;
 using System.Diagnostics;
 using System.IO;
 
+using static CharLS.util;
+
 namespace CharLS
 {
-    public class DecoderStrategy<TSample> : IStrategy<TSample> where TSample : struct
+    public class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IStrategy where TSample : struct
     {
         private const int bufferbits = sizeof(int) * 8;
 
-        internal readonly JlsParameters _params;
-
-        internal IProcessLine _processLine;
+        private IProcessLine _processLine;
 
         private byte[] _buffer;
 
@@ -29,9 +30,9 @@ namespace CharLS
 
         private int _endPosition;
 
-        public DecoderStrategy()
+        public DecoderStrategy(ITraits<TSample, TPixel> inTraits, JlsParameters parameters)
+            : base(inTraits, parameters)
         {
-            _params = null;
             _processLine = null;
             _buffer = null;
             _byteStream = null;
@@ -42,9 +43,39 @@ namespace CharLS
             _endPosition = 0;
         }
 
-        public JlsParameters Parameters { get; set; }
+        // Setup codec for decoding and calls DoScan
+        public void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData)
+        {
+            _processLine = processLine;
 
-        public void Init(ByteStreamInfo compressedStream)
+            uint8_t* compressedBytes = const_cast<uint8_t*>(
+                static_cast <
+            const uint8_t* >
+            (compressedData.rawData))
+            ;
+            _rect = rect;
+
+            Init(compressedData);
+            DoScan();
+            compressedData.Seek(GetCurBytePos() - compressedBytes);
+        }
+
+        public int EncodeScan(IProcessLine processLine, ByteStreamInfo compressedData)
+        {
+            throw new NotSupportedException($"{nameof(DecoderStrategy<TSample, TPixel>)} does not support encoding.");
+        }
+
+        protected override void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride)
+        {
+        }
+
+
+        protected override void OnLineEnd(int pixelCount, byte[] ptypeBuffer, int pixelStride)
+        {
+            _processLine.NewLineDecoded(ptypeBuffer, 0, pixelStride, pixelCount);
+        }
+
+        protected override void Init(ByteStreamInfo compressedStream)
         {
             _validBits = 0;
             _readCache = 0;
@@ -68,7 +99,73 @@ namespace CharLS
             MakeValid();
         }
 
-        public void AddBytesFromStream()
+        protected override void EndScan()
+        {
+            if ((*_position) != 0xFF)
+            {
+                ReadBit();
+
+                if ((*_position) != 0xFF) throw new charls_error(ApiResult.TooMuchCompressedData);
+            }
+
+            if (_readCache != 0) throw new charls_error(ApiResult.TooMuchCompressedData);
+        }
+
+        protected override TSample DoRegular(int Qs, int x, int pred)
+        {
+            int sign = BitWiseSign(Qs);
+            JlsContext ctx = _contexts[ApplySign(Qs, sign)];
+            int k = ctx.GetGolomb();
+            int Px = traits.CorrectPrediction(pred + ApplySign(ctx.C, sign));
+
+            int ErrVal;
+            Code code = decodingTables[k].Get(PeekByte());
+            if (code.GetLength() != 0)
+            {
+                Skip(code.GetLength());
+                ErrVal = code.GetValue();
+                Debug.Assert(Math.Abs(ErrVal) < 65535);
+            }
+            else
+            {
+                ErrVal = UnMapErrVal(DecodeValue(k, traits.LIMIT, traits.qbpp));
+                if (Math.Abs(ErrVal) > 65535)
+                    throw new charls_error(ApiResult.InvalidCompressedData);
+            }
+            if (k == 0)
+            {
+                ErrVal = ErrVal ^ ctx.GetErrorCorrection(traits.NEAR);
+            }
+            ctx.UpdateVariables(ErrVal, traits.NEAR, traits.RESET);
+            ErrVal = ApplySign(ErrVal, sign);
+            return traits.ComputeReconstructedSample(Px, ErrVal);
+        }
+
+        protected override int DoRunMode(int startIndex)
+        {
+            TPixel Ra = _currentLine[startIndex - 1];
+
+            int runLength = DecodeRunPixels(Ra, _currentLine + startIndex, _width - startIndex);
+            int endIndex = startIndex + runLength;
+
+            if (endIndex == _width)
+                return endIndex - startIndex;
+
+            // run interruption
+            TPixel Rb = _previousLine[endIndex];
+            _currentLine[endIndex] = DecodeRIPixel(Ra, Rb);
+            DecrementRunIndex();
+            return endIndex - startIndex + 1;
+        }
+
+        internal int ReadLongValue(int length)
+        {
+            if (length <= 24) return ReadValue(length);
+
+            return (ReadValue(length - 24) << 24) + ReadValue(24);
+        }
+
+        private void AddBytesFromStream()
         {
             if (_byteStream == null /* OR eof */) return;
 
@@ -90,66 +187,13 @@ namespace CharLS
             _endPosition += readbytes;
         }
 
-        public void Skip(int length)
+        private void Skip(int length)
         {
             _validBits -= length;
             _readCache = _readCache << length;
         }
 
-
-        public void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride)
-        {
-        }
-
-
-        public void OnLineEnd(int pixelCount, byte[] ptypeBuffer, int pixelStride)
-        {
-            _processLine.NewLineDecoded(ptypeBuffer, 0, pixelStride, pixelCount);
-        }
-
-        public void EndScan()
-        {
-            if ((*_position) != 0xFF)
-            {
-                ReadBit();
-
-                if ((*_position) != 0xFF) throw new charls_error(ApiResult.TooMuchCompressedData);
-            }
-
-            if (_readCache != 0) throw new charls_error(ApiResult.TooMuchCompressedData);
-        }
-
-        public TSample DoRegular(int Qs, int x, int pred)
-        {
-            const int sign = BitWiseSign(Qs);
-            JlsContext & ctx = _contexts[ApplySign(Qs, sign)];
-            const int k = ctx.GetGolomb();
-            const int Px = traits.CorrectPrediction(pred + ApplySign(ctx.C, sign));
-
-            int ErrVal;
-            const Code&code = decodingTables[k].Get(STRATEGY::PeekByte());
-            if (code.GetLength() != 0)
-            {
-                Skip(code.GetLength());
-                ErrVal = code.GetValue();
-                Debug.Assert(std::abs(ErrVal) < 65535);
-            }
-            else
-            {
-                ErrVal = UnMapErrVal(DecodeValue(k, traits.LIMIT, traits.qbpp));
-                if (std::abs(ErrVal) > 65535)
-                    throw charls_error(charls::ApiResult::InvalidCompressedData);
-            }
-            if (k == 0)
-            {
-                ErrVal = ErrVal ^ ctx.GetErrorCorrection(traits.NEAR);
-            }
-            ctx.UpdateVariables(ErrVal, traits.NEAR, traits.RESET);
-            ErrVal = ApplySign(ErrVal, sign);
-            return traits.ComputeReconstructedSample(Px, ErrVal);
-        }
-
-        public bool OptimizedRead()
+        private bool OptimizedRead()
         {
             // Easy & fast: if there is no 0xFF byte in sight, we can read without bitstuffing
             if (_position < _nextFFPosition - (sizeof(int) - 1))
@@ -164,8 +208,7 @@ namespace CharLS
             return false;
         }
 
-
-        public void MakeValid()
+        private void MakeValid()
         {
             Debug.Assert(_validBits <= bufferbits - 8);
 
@@ -209,7 +252,7 @@ namespace CharLS
             _nextFFPosition = FindNextFF();
         }
 
-        public int FindNextFF()
+        private int FindNextFF()
         {
             var positionNextFF = _position;
 
@@ -223,7 +266,7 @@ namespace CharLS
             return positionNextFF;
         }
 
-        public int GetCurBytePos()
+        private int GetCurBytePos()
         {
             int validBits = _validBits;
             uint8_t* compressedBytes = _position;
@@ -239,7 +282,7 @@ namespace CharLS
             }
         }
 
-        public int ReadValue(int length)
+        private int ReadValue(int length)
         {
             if (_validBits < length)
             {
@@ -254,7 +297,7 @@ namespace CharLS
             return result;
         }
 
-        public int PeekByte()
+        private int PeekByte()
         {
             if (_validBits < 8)
             {
@@ -264,7 +307,7 @@ namespace CharLS
             return _readCache >> (bufferbits - 8);
         }
 
-        public bool ReadBit()
+        private bool ReadBit()
         {
             if (_validBits <= 0)
             {
@@ -276,7 +319,7 @@ namespace CharLS
             return bSet;
         }
 
-        public int Peek0Bits()
+        private int Peek0Bits()
         {
             if (_validBits < 16)
             {
@@ -293,7 +336,7 @@ namespace CharLS
             return -1;
         }
 
-        public int ReadHighbits()
+        private int ReadHighbits()
         {
             int count = Peek0Bits();
             if (count >= 0)
@@ -309,11 +352,99 @@ namespace CharLS
             }
         }
 
-        public int ReadLongValue(int length)
-        {
-            if (length <= 24) return ReadValue(length);
+        // Encoding/decoding of golomb codes
 
-            return (ReadValue(length - 24) << 24) + ReadValue(24);
+        private int DecodeValue(int k, int limit, int qbpp)
+        {
+            int highbits = ReadHighbits();
+
+            if (highbits >= limit - (qbpp + 1))
+                return ReadValue(qbpp) + 1;
+
+            if (k == 0)
+                return highbits;
+
+            return (highbits << k) + ReadValue(k);
+        }
+
+        // RI = Run interruption: functions that handle the sample terminating a run.
+
+        private int DecodeRIError(CContextRunMode ctx)
+        {
+            int k = ctx.GetGolomb();
+            int EMErrval = DecodeValue(k, traits.LIMIT - J[_RUNindex] - 1, traits.qbpp);
+            int Errval = ctx.ComputeErrVal(EMErrval + ctx._nRItype, k);
+            ctx.UpdateVariables(Errval, EMErrval);
+            return Errval;
+        }
+
+        private ITriplet<TSample> DecodeRIPixel(ITriplet<TSample> Ra, ITriplet<TSample> Rb)
+        {
+            int Errval1 = DecodeRIError(_contextRunmode[0]);
+            int Errval2 = DecodeRIError(_contextRunmode[0]);
+            int Errval3 = DecodeRIError(_contextRunmode[0]);
+
+            return new Triplet<TSample>(traits.ComputeReconstructedSample(Rb.v1, Errval1 * Sign(Rb.v1 - Ra.v1)),
+                                   traits.ComputeReconstructedSample(Rb.v2, Errval2 * Sign(Rb.v2 - Ra.v2)),
+                                   traits.ComputeReconstructedSample(Rb.v3, Errval3 * Sign(Rb.v3 - Ra.v3)));
+        }
+
+
+        private TSample DecodeRIPixel(int Ra, int Rb)
+        {
+            if (Math.Abs(Ra - Rb) <= traits.NEAR)
+            {
+                int ErrVal = DecodeRIError(_contextRunmode[1]);
+                return traits.ComputeReconstructedSample(Ra, ErrVal);
+            }
+            else
+            {
+                int ErrVal = DecodeRIError(_contextRunmode[0]);
+                return traits.ComputeReconstructedSample(Rb, ErrVal * Sign(Rb - Ra));
+            }
+        }
+
+        // RunMode: Functions that handle run-length encoding
+
+        private int DecodeRunPixels(TPixel Ra, TPixel* startPos, int cpixelMac)
+        {
+            int index = 0;
+            while (ReadBit())
+            {
+                int count = Math.Min(1 << J[_RUNindex], cpixelMac - index);
+                index += count;
+                Debug.Assert(index <= cpixelMac);
+
+                if (count == (1 << J[_RUNindex]))
+                {
+                    IncrementRunIndex();
+                }
+
+                if (index == cpixelMac)
+                    break;
+            }
+
+            if (index != cpixelMac)
+            {
+                // incomplete run.
+                index += (J[_RUNindex] > 0) ? ReadValue(J[_RUNindex]) : 0;
+            }
+
+            if (index > cpixelMac)
+                throw new charls_error(ApiResult.InvalidCompressedData);
+
+            for (int i = 0; i < index; ++i)
+            {
+                startPos[i] = Ra;
+            }
+
+            return index;
+        }
+
+        private static int UnMapErrVal(int mappedError)
+        {
+            int sign = (mappedError << (INT32_BITCOUNT - 1)) >> (INT32_BITCOUNT - 1);
+            return sign ^ (mappedError >> 1);
         }
     }
 }
