@@ -7,14 +7,16 @@ namespace CharLS
 {
     public class charls_error : Exception
     {
-        public charls_error(ApiResult errorCode)
-            : base($"Error code: {errorCode}")
+        public charls_error(ApiResult errorCode) : this(errorCode, null)
         {
         }
 
         public charls_error(ApiResult errorCode, string message)
-            : base($"Error code: {errorCode}, message: {message}")
+            : base(message)
         {
+            Code = errorCode;
         }
+
+        public ApiResult Code { get; }
     }
 }

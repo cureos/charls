@@ -59,6 +59,7 @@
     <Compile Include="JlsParameters.cs" />
     <Compile Include="JlsRect.cs" />
     <Compile Include="JpegImageDataSegment.cs" />
+    <Compile Include="JpegLS.cs" />
     <Compile Include="JpegLSPresetCodingParameters.cs" />
     <Compile Include="JpegMarkerCode.cs" />
     <Compile Include="JpegMarkerSegment.cs" />
