@@ -9,7 +9,7 @@ using static CharLS.util;
 
 namespace CharLS
 {
-    public class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IStrategy where TSample : struct
+    public class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IEncoderStrategy where TSample : struct
     {
         private DecoderStrategy<TSample, TPixel> _qdecoder;
 
@@ -54,11 +54,6 @@ namespace CharLS
             DoScan();
 
             return GetLength();
-        }
-
-        public void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData)
-        {
-            throw new NotSupportedException($"{nameof(EncoderStrategy<TSample, TPixel>)} does not support decoding.");
         }
 
         protected override void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride)

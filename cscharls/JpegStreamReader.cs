@@ -57,9 +57,9 @@ namespace CharLS
                 ReadStartOfScan(componentIndex == 0);
 
                 var currentPosition = rawPixels.Position;
-                /*var qcodec = JlsCodecFactory<DecoderStrategy>().GetCodec(_params, _params.custom);
+                var qcodec = JlsCodecFactory<IDecoderStrategy>.GetCodec(_params, _params.custom);
                 var processLine = qcodec.CreateProcess(rawPixels);
-                qcodec.DecodeScan(processLine, _rect, _byteStream);*/
+                qcodec.DecodeScan(processLine, _rect, _byteStream);
                 rawPixels.Position = currentPosition + bytesPerPlane;
 
                 if (_params.interleaveMode != InterleaveMode.None) return;

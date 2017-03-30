@@ -9,7 +9,7 @@ using static CharLS.util;
 
 namespace CharLS
 {
-    public class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IStrategy where TSample : struct
+    public class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IDecoderStrategy where TSample : struct
     {
         private const int bufferbits = sizeof(int) * 8;
 
@@ -58,11 +58,6 @@ namespace CharLS
             Init(compressedData);
             DoScan();
             compressedData.Seek(GetCurBytePos() - compressedBytes);
-        }
-
-        public int EncodeScan(IProcessLine processLine, ByteStreamInfo compressedData)
-        {
-            throw new NotSupportedException($"{nameof(DecoderStrategy<TSample, TPixel>)} does not support encoding.");
         }
 
         protected override void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride)

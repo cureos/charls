@@ -14,15 +14,15 @@ namespace CharLS
     // The coder/decoder also delegates some functions to the traits class.
     // This is to allow the traits class to replace the default implementation here with optimized specific implementations.
     // This is done for lossless coding/decoding: see losslesstraits.h 
-    public class DefaultTraits<TSample, TPixel> : TraitsBase<TSample, TPixel>
+    public class DefaultTraitsT<TSample, TPixel> : TraitsBase<TSample, TPixel>
         where TSample : struct
     {
-        public DefaultTraits(int max, int near, int reset = BASIC_RESET)
+        public DefaultTraitsT(int max, int near, int reset = BASIC_RESET)
             : base(max, near, reset)
         {
         }
 
-        public DefaultTraits(ITraits<TSample, TPixel> other)
+        public DefaultTraitsT(ITraits<TSample, TPixel> other)
             : base(other)
         {
         }

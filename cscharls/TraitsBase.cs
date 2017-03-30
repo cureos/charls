@@ -43,7 +43,7 @@ namespace CharLS
             RESET = BASIC_RESET;
         }
 
-        public int MAXVAL { get; }
+        public int MAXVAL { get; set; }
 
         public int RANGE { get; }
 

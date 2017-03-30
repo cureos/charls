@@ -8,10 +8,10 @@ namespace CharLS
     // Optimized trait classes for lossless compression of 8 bit color and 8/16 bit monochrome images.
     // This class assumes MaximumSampleValue correspond to a whole number of bits, and no custom ResetValue is set when encoding.
     // The point of this is to have the most optimized code for the most common and most demanding scenario. 
-    public abstract class LosslessTraitsImpl<TSample, TPixel> : TraitsBase<TSample, TPixel>
+    public abstract class LosslessTraitsImplT<TSample, TPixel> : TraitsBase<TSample, TPixel>
         where TSample : struct
     {
-        protected LosslessTraitsImpl(int bitsperpixel)
+        protected LosslessTraitsImplT(int bitsperpixel)
             : base(bitsperpixel)
         {
         }
@@ -49,16 +49,16 @@ namespace CharLS
         }
     }
 
-    public class LosslessTraits<TSample> : LosslessTraitsImpl<TSample, TSample>
+    public class LosslessTraitsT<TSample> : LosslessTraitsImplT<TSample, TSample>
         where TSample : struct
     {
-        public LosslessTraits(int bitsperpixel)
+        public LosslessTraitsT(int bitsperpixel)
             : base(bitsperpixel)
         {
         }
     }
 
-    public class LosslessTraits8 : LosslessTraitsImpl<byte, byte>
+    public class LosslessTraits8 : LosslessTraitsImplT<byte, byte>
     {
         public LosslessTraits8()
             : base(8)
@@ -81,7 +81,7 @@ namespace CharLS
         }
     }
 
-    public class LosslessTraits16 : LosslessTraitsImpl<ushort, ushort>
+    public class LosslessTraits16 : LosslessTraitsImplT<ushort, ushort>
     {
         public LosslessTraits16()
             : base(16)
@@ -104,10 +104,10 @@ namespace CharLS
         }
     }
 
-    public class TripletLosslessTraits<TSample> : LosslessTraitsImpl<TSample, ITriplet<TSample>>
+    public class LosslessTraitsTriplet<TSample> : LosslessTraitsImplT<TSample, ITriplet<TSample>>
         where TSample : struct
     {
-        public TripletLosslessTraits(int bitsperpixel)
+        public LosslessTraitsTriplet(int bitsperpixel)
             : base(bitsperpixel)
         {
         }

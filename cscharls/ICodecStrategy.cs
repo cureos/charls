@@ -3,10 +3,21 @@
 
 namespace CharLS
 {
-    public interface IStrategy
+    public interface ICodecStrategy
+    {
+        void SetPresets(JpegLSPresetCodingParameters presets);
+
+        IProcessLine CreateProcess(ByteStreamInfo info);
+    }
+
+    public interface IEncoderStrategy : ICodecStrategy
     {
         int EncodeScan(IProcessLine processLine, ByteStreamInfo compressedData);
+    }
 
+    public interface IDecoderStrategy : ICodecStrategy
+    {
         void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData);
+
     }
 }

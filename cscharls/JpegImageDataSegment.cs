@@ -20,13 +20,13 @@ namespace CharLS
 
         public void Serialize(JpegStreamWriter streamWriter)
         {
-            /*JlsParameters info = _params;
+            JlsParameters info = _params;
             info.components = _componentCount;
-            var codec = JlsCodecFactory<EncoderStrategy>().GetCodec(info, _params.custom);
+            var codec = JlsCodecFactory<IEncoderStrategy>.GetCodec(info, _params.custom);
             var processLine = codec.CreateProcess(_rawStreamInfo);
             ByteStreamInfo compressedData = streamWriter.OutputStream();
             var cbyteWritten = codec.EncodeScan(processLine, compressedData);
-            streamWriter.Seek(cbyteWritten);*/
+            streamWriter.Seek(cbyteWritten);
         }
     }
 }

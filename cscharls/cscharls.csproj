@@ -42,13 +42,13 @@
     <Compile Include="ColorTransformation.cs" />
     <Compile Include="CTable.cs" />
     <Compile Include="DecoderStrategy.cs" />
-    <Compile Include="DefaultTraits.cs" />
+    <Compile Include="DefaultTraitsT.cs" />
     <Compile Include="EncoderStrategy.cs" />
     <Compile Include="FromBigEndian.cs" />
     <Compile Include="IColorTransform.cs" />
     <Compile Include="IJpegSegment.cs" />
     <Compile Include="IProcessLine.cs" />
-    <Compile Include="IStrategy.cs" />
+    <Compile Include="ICodecStrategy.cs" />
     <Compile Include="ITraits.cs" />
     <Compile Include="InterleaveMode.cs" />
     <Compile Include="ITriplet.cs" />
@@ -64,7 +64,7 @@
     <Compile Include="JpegMarkerSegment.cs" />
     <Compile Include="JpegStreamReader.cs" />
     <Compile Include="JpegStreamWriter.cs" />
-    <Compile Include="LosslessTraits.cs" />
+    <Compile Include="LosslessTraitsT.cs" />
     <Compile Include="PostProcesSingleComponent.cs" />
     <Compile Include="PostProcesSingleStream.cs" />
     <Compile Include="ProcessTransformed.cs" />
