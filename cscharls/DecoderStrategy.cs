@@ -63,7 +63,7 @@ namespace CharLS
 
             Init(compressedData);
             DoScan();
-            compressedData.Seek(GetCurBytePos() - compressedBytes);
+            compressedData.Skip(GetCurBytePos() - compressedBytes);
         }
 
         protected override void OnLineBegin(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride)
@@ -146,7 +146,7 @@ namespace CharLS
         {
             TPixel Ra = _currentLine[startIndex - 1];
 
-            int runLength = DecodeRunPixels(Ra, _currentLine, startIndex, _width - startIndex);
+            int runLength = DecodeRunPixels(Ra, _currentLine, _width - startIndex);
             int endIndex = startIndex + runLength;
 
             if (endIndex == _width)
@@ -416,7 +416,7 @@ namespace CharLS
 
         // RunMode: Functions that handle run-length encoding
 
-        private int DecodeRunPixels(TPixel Ra, TPixel[] pixels, int startPos, int cpixelMac)
+        private int DecodeRunPixels(TPixel Ra, Subarray<TPixel> pixels, int cpixelMac)
         {
             int index = 0;
             while (ReadBit())
@@ -445,7 +445,7 @@ namespace CharLS
 
             for (int i = 0; i < index; ++i)
             {
-                pixels[startPos + i] = Ra;
+                pixels[i] = Ra;
             }
 
             return index;

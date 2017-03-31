@@ -52,7 +52,7 @@ namespace CharLS
                     for (int component = 0; component < info.components; ++component)
                     {
                         writer.AddScan(rawStreamInfo, info);
-                        rawStreamInfo.Seek(cbyteComp);
+                        rawStreamInfo.Skip(cbyteComp);
                     }
                 }
                 else

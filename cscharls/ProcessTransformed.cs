@@ -48,10 +48,9 @@ namespace CharLS
                 throw new charls_error(ApiResult.UncompressedBufferTooSmall, message);
             }
 
-            var currentPosition = _rawPixels.Position;
-            _rawPixels.Read(_buffer, 0, bytesToRead);
+            var bytesRead = _rawPixels.Read(_buffer, 0, bytesToRead);
             Transform(_buffer, dest, destOffset, destStride, pixelCount);
-            _rawPixels.Position = currentPosition + _params.stride;
+            if (bytesRead < _params.stride) _rawPixels.Skip(_params.stride - bytesRead);
         }
 
         private static void TransformLineToQuad(

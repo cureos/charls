@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017 cscharls contributors.
+// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
 using System.IO;
@@ -42,7 +42,7 @@ namespace CharLS
 
             if (_bytesPerLine > bytesToRead)
             {
-                _rawData.Seek(_bytesPerLine - bytesToRead);
+                _rawData.Skip(_bytesPerLine - bytesToRead);
             }
         }
 

@@ -16,7 +16,7 @@ namespace CharLS
 
     public sealed class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IEncoderStrategy where TSample : struct
     {
-        private DecoderStrategy<TSample, TPixel> _qdecoder;
+        private DecoderStrategy<TSample, TPixel> _qdecoder; // TODO Skip?
 
         private IProcessLine _processLine;
 

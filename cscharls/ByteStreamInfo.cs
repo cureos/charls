@@ -87,14 +87,14 @@ namespace CharLS
             }
         }
 
-        public void Seek(int offset)
+        public void Skip(int count)
         {
-            Position += offset;
+            Position += count;
         }
 
         public bool Require(bool read, int count)
         {
-            var isModeSupported = read ? _canSeek && _canRead : _canWrite;
+            var isModeSupported = read ? _canRead : _canWrite;
             if (_isStream) return isModeSupported;
             return isModeSupported && _arrayPosition + count <= _arrayLength;
         }

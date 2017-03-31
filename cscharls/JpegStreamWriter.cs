@@ -116,7 +116,7 @@ namespace CharLS
 
         internal void Seek(int byteCount)
         {
-            _data.Seek(byteCount);
+            _data.Skip(byteCount);
         }
 
         private static bool IsDefault(JpegLSPresetCodingParameters custom)
