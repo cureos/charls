@@ -61,12 +61,12 @@ namespace CharLS
             return GetLength();
         }
 
-        protected override void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride)
+        protected override void OnLineBegin(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride)
         {
             _processLine.NewLineRequested(ptypeBuffer, 0, pixelStride, cpixel);
         }
 
-        protected override void OnLineEnd(int cpixel, byte[] ptypeBuffer, int pixelStride)
+        protected override void OnLineEnd(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride)
         {
         }
 

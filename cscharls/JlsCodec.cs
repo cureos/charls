@@ -147,9 +147,9 @@ namespace CharLS
 
         protected int _RUNindex;
 
-        protected TPixel[] _previousLine; // previous line ptr
+        protected Subarray<TPixel> _previousLine; // previous line ptr
 
-        protected TPixel[] _currentLine; // current line ptr
+        protected Subarray<TPixel> _currentLine; // current line ptr
 
         // quantization lookup table
         private sbyte[] _pquant;
@@ -171,9 +171,75 @@ namespace CharLS
             _pquant = null;
         }
 
-        protected abstract void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride);
+        // Factory function for ProcessLine objects to copy/transform unencoded pixels to/from our scanline buffers.
+        public IProcessLine CreateProcess(ByteStreamInfo info)
+        {
+            if (!IsInterleaved())
+            {
+                return new PostProcesSingle(info, _params, Marshal.SizeOf(default(TPixel)));
+            }
 
-        protected abstract void OnLineEnd(int cpixel, byte[] ptypeBuffer, int pixelStride);
+            if (_params.colorTransformation == ColorTransformation.None) return new ProcessTransformed<TSample>(info, _params, new TransformNone<TSample>());
+
+            if (_params.bitsPerSample == Marshal.SizeOf(default(TSample)) * 8)
+            {
+                switch (_params.colorTransformation)
+                {
+                    case ColorTransformation.HP1:
+                        return new ProcessTransformed<TSample>(info, _params, new TransformHp1<TSample>());
+                    case ColorTransformation.HP2:
+                        return new ProcessTransformed<TSample>(info, _params, new TransformHp2<TSample>());
+                    case ColorTransformation.HP3:
+                        return new ProcessTransformed<TSample>(info, _params, new TransformHp3<TSample>());
+                    default:
+                        var message = $"Color transformation {_params.colorTransformation} is not supported.";
+                        throw new charls_error(ApiResult.UnsupportedColorTransform, message);
+                }
+            }
+
+            if (_params.bitsPerSample > 8)
+            {
+                int shift = 16 - _params.bitsPerSample;
+                switch (_params.colorTransformation)
+                {
+                    case ColorTransformation.HP1:
+                        return new ProcessTransformed<ushort>(
+                            info,
+                            _params,
+                            new TransformShifted<ushort, TransformHp1<ushort>>(shift));
+                    case ColorTransformation.HP2:
+                        return new ProcessTransformed<ushort>(
+                            info,
+                            _params,
+                            new TransformShifted<ushort, TransformHp2<ushort>>(shift));
+                    case ColorTransformation.HP3:
+                        return new ProcessTransformed<ushort>(
+                            info,
+                            _params,
+                            new TransformShifted<ushort, TransformHp3<ushort>>(shift));
+                    default:
+                        var message = $"Color transformation {_params.colorTransformation} is not supported.";
+                        throw new charls_error(ApiResult.UnsupportedColorTransform, message);
+                }
+            }
+
+            throw new charls_error(ApiResult.UnsupportedBitDepthForTransform);
+        }
+
+        public void SetPresets(JpegLSPresetCodingParameters presets)
+        {
+            JpegLSPresetCodingParameters presetDefault = ComputeDefault(_traits.MAXVAL, _traits.NEAR);
+
+            InitParams(
+                presets.Threshold1 != 0 ? presets.Threshold1 : presetDefault.Threshold1,
+                presets.Threshold2 != 0 ? presets.Threshold2 : presetDefault.Threshold2,
+                presets.Threshold3 != 0 ? presets.Threshold3 : presetDefault.Threshold3,
+                presets.ResetValue != 0 ? presets.ResetValue : presetDefault.ResetValue);
+        }
+
+        protected abstract void OnLineBegin(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride);
+
+        protected abstract void OnLineEnd(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride);
 
         protected abstract void Init(ByteStreamInfo compressedStream);
 
@@ -212,17 +278,6 @@ namespace CharLS
         private static int ComputeContextID(int Q1, int Q2, int Q3)
         {
             return (Q1 * 9 + Q2) * 9 + Q3;
-        }
-
-        public void SetPresets(JpegLSPresetCodingParameters presets)
-        {
-            JpegLSPresetCodingParameters presetDefault = ComputeDefault(_traits.MAXVAL, _traits.NEAR);
-
-            InitParams(
-                presets.Threshold1 != 0 ? presets.Threshold1 : presetDefault.Threshold1,
-                presets.Threshold2 != 0 ? presets.Threshold2 : presetDefault.Threshold2,
-                presets.Threshold3 != 0 ? presets.Threshold3 : presetDefault.Threshold3,
-                presets.ResetValue != 0 ? presets.ResetValue : presetDefault.ResetValue);
         }
 
         private bool IsInterleaved()
@@ -407,16 +462,18 @@ namespace CharLS
             int pixelstride = _width + 4;
             int components = _params.interleaveMode == InterleaveMode.Line ? _params.components : 1;
 
-            var vectmp = new List<TPixel>(2 * components * pixelstride);
+            var vectmp = new TPixel[2 * components * pixelstride];
             var rgRUNindex = new List<int>(components);
 
             for (int line = 0; line < _params.height; ++line)
             {
-                _previousLine = &vectmp[1];
-                _currentLine = &vectmp[1 + components * pixelstride];
+                _previousLine = new Subarray<TPixel>(vectmp, 1, pixelstride);
+                _currentLine = new Subarray<TPixel>(vectmp, 1 + components * pixelstride, pixelstride);
                 if ((line & 1) == 1)
                 {
-                    std::swap(_previousLine, _currentLine);
+                    var tmp = _previousLine;
+                    _previousLine = _currentLine;
+                    _currentLine = tmp;
                 }
 
                 OnLineBegin(_width, _currentLine, pixelstride);
@@ -428,88 +485,26 @@ namespace CharLS
                     // initialize edge pixels used for prediction
                     _previousLine[_width] = _previousLine[_width - 1];
                     _currentLine[-1] = _previousLine[0];
-                    DoLine(); // dummy arg for overload resolution
+                    DoLine();
 
                     rgRUNindex[component] = _RUNindex;
-                    _previousLine += pixelstride;
-                    _currentLine += pixelstride;
+                    _previousLine.Offset += pixelstride;
+                    _currentLine.Offset += pixelstride;
                 }
 
                 if (_rect.Y <= line && line < _rect.Y + _rect.Height)
                 {
-                    OnLineEnd(_rect.Width, _currentLine + _rect.X - (components * pixelstride), pixelstride);
+                    OnLineEnd(
+                        _rect.Width,
+                        new Subarray<TPixel>(
+                            vectmp,
+                            _currentLine.Offset + _rect.X - (components * pixelstride),
+                            pixelstride),
+                        pixelstride);
                 }
             }
 
             EndScan();
-        }
-
-        // Factory function for ProcessLine objects to copy/transform unencoded pixels to/from our scanline buffers.
-        public IProcessLine CreateProcess(ByteStreamInfo info)
-        {
-            if (!IsInterleaved())
-            {
-                return info.rawData
-                           ? std::unique_ptr<ProcessLine>(
-                               std::make_unique<PostProcesSingleComponent>(
-                                   info.rawData,
-                                   _params,
-                                   sizeof(typename
-                TRAITS::TPixel))) :
-                std::unique_ptr<ProcessLine>(
-                    std::make_unique<PostProcesSingleStream>(
-                        info.rawStream,
-                        _params,
-                        sizeof(typename
-                TRAITS::TPixel)))
-                ;
-            }
-
-            if (_params.colorTransformation == ColorTransformation.None) return new ProcessTransformed<TSample>(info, _params, new TransformNone<TSample>());
-
-            if (_params.bitsPerSample == Marshal.SizeOf(default(TSample)) * 8)
-            {
-                switch (_params.colorTransformation)
-                {
-                    case ColorTransformation.HP1:
-                        return new ProcessTransformed<TSample>(info, _params, new TransformHp1<TSample>());
-                    case ColorTransformation.HP2:
-                        return new ProcessTransformed<TSample>(info, _params, new TransformHp2<TSample>());
-                    case ColorTransformation.HP3:
-                        return new ProcessTransformed<TSample>(info, _params, new TransformHp3<TSample>());
-                    default:
-                        var message = $"Color transformation {_params.colorTransformation} is not supported.";
-                        throw new charls_error(ApiResult.UnsupportedColorTransform, message);
-                }
-            }
-
-            if (_params.bitsPerSample > 8)
-            {
-                int shift = 16 - _params.bitsPerSample;
-                switch (_params.colorTransformation)
-                {
-                    case ColorTransformation.HP1:
-                        return new ProcessTransformed<ushort>(
-                            info,
-                            _params,
-                            new TransformShifted<ushort, TransformHp1<ushort>>(shift));
-                    case ColorTransformation.HP2:
-                        return new ProcessTransformed<ushort>(
-                            info,
-                            _params,
-                            new TransformShifted<ushort, TransformHp2<ushort>>(shift));
-                    case ColorTransformation.HP3:
-                        return new ProcessTransformed<ushort>(
-                            info,
-                            _params,
-                            new TransformShifted<ushort, TransformHp3<ushort>>(shift));
-                    default:
-                        var message = $"Color transformation {_params.colorTransformation} is not supported.";
-                        throw new charls_error(ApiResult.UnsupportedColorTransform, message);
-                }
-            }
-
-            throw new charls_error(ApiResult.UnsupportedBitDepthForTransform);
         }
 
         // Initialize the codec data structures. Depends on JPEG-LS parameters like Threshold1-Threshold3.

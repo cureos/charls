@@ -66,12 +66,14 @@
     <Compile Include="JpegStreamReader.cs" />
     <Compile Include="JpegStreamWriter.cs" />
     <Compile Include="LosslessTraitsT.cs" />
+    <Compile Include="PostProcesSingle.cs" />
     <Compile Include="PostProcesSingleComponent.cs" />
     <Compile Include="PostProcesSingleStream.cs" />
     <Compile Include="ProcessTransformed.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quad.cs" />
     <Compile Include="Size.cs" />
+    <Compile Include="Subarray.cs" />
     <Compile Include="TraitsBase.cs" />
     <Compile Include="ColorTransformBase.cs" />
     <Compile Include="TransformHp3.cs" />

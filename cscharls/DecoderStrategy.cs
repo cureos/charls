@@ -66,12 +66,12 @@ namespace CharLS
             compressedData.Seek(GetCurBytePos() - compressedBytes);
         }
 
-        protected override void OnLineBegin(int cpixel, byte[] ptypeBuffer, int pixelStride)
+        protected override void OnLineBegin(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride)
         {
         }
 
 
-        protected override void OnLineEnd(int pixelCount, byte[] ptypeBuffer, int pixelStride)
+        protected override void OnLineEnd(int pixelCount, Subarray<TPixel> ptypeBuffer, int pixelStride)
         {
             _processLine.NewLineDecoded(ptypeBuffer, 0, pixelStride, pixelCount);
         }

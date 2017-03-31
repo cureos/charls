@@ -98,7 +98,7 @@ namespace CharLS
         internal void WriteBytes(byte[] bytes)
         {
             if (!_data.Require(false, bytes.Length)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
-            _data.WriteBytes(bytes);
+            _data.Write(bytes);
         }
 
         internal void WriteWord(ushort value)

@@ -152,19 +152,19 @@ namespace CharLS
             }
         }
 
-        public void WriteBytes(byte[] bytes, int count = -1)
+        public void Write(byte[] bytes, int offset = 0, int count = -1)
         {
             if (!_canWrite) throw new InvalidOperationException();
             if (count < 0) count = bytes.Length;
 
             if (_isStream)
             {
-                _rawStream.Write(bytes, 0, count);
+                _rawStream.Write(bytes, offset, count);
             }
             else
             {
                 if (_arrayPosition + count >= _arrayLength) throw new EndOfStreamException();
-                Array.Copy(bytes, 0, _rawData, _arrayPosition, count);
+                Array.Copy(bytes, offset, _rawData, _arrayPosition, count);
                 _arrayPosition += count;
             }
         }

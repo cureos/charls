@@ -36,7 +36,7 @@ namespace CharLS
             if (bytesToWrite > _buffer.Length) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
 
             DecodeTransform(source, sourceOffset, _buffer, pixelCount, sourceStride);
-            _rawPixels.WriteBytes(_buffer, bytesToWrite);
+            _rawPixels.Write(_buffer, 0, bytesToWrite);
         }
 
         public void NewLineRequested(byte[] dest, int destOffset, int destStride, int pixelCount)
