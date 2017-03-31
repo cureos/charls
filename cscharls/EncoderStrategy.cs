@@ -38,7 +38,7 @@ namespace CharLS
 
         private byte[] _buffer;
 
-        Stream _compressedStream;
+        private ByteStreamInfo _compressedStream;
 
         public EncoderStrategy(ITraits<TSample, TPixel> inTraits, JlsParameters parameters)
             : base(inTraits, parameters)
@@ -80,18 +80,21 @@ namespace CharLS
             _freeBitCount = sizeof(uint) * 8;
             _bitBuffer = 0;
 
-            if (compressedStream.rawStream)
-            {
-                _compressedStream = compressedStream.rawStream;
-                _buffer.resize(4000);
-                _position = _buffer.data();
-                _compressedLength = _buffer.size();
-            }
-            else
-            {
-                _position = compressedStream.rawData;
-                _compressedLength = compressedStream.count;
-            }
+            _position = 0;
+            _compressedLength = compressedStream.Length;
+            _compressedStream = compressedStream;
+            /*            if (compressedStream.rawStream)
+                        {
+                            _compressedStream = compressedStream.rawStream;
+                            _buffer.resize(4000);
+                            _position = _buffer.data();
+                            _compressedLength = _buffer.size();
+                        }
+                        else
+                        {
+                            _position = compressedStream.rawData;
+                            _compressedLength = compressedStream.count;
+                        }*/
         }
 
         protected override void EndScan()
@@ -105,10 +108,10 @@ namespace CharLS
             Flush();
             Debug.Assert(_freeBitCount == 0x20);
 
-            if (_compressedStream != null)
+            /*if (_compressedStream != null)
             {
                 OverFlow();
-            }
+            }*/
         }
 
         protected override TSample DoRegular(int Qs, int x, int pred)
@@ -213,7 +216,7 @@ namespace CharLS
                 _bitBuffer |= (uint)bits << _freeBitCount;
             }
         }
-
+/*
         private void OverFlow()
         {
             if (_compressedStream == null) throw new charls_error(ApiResult.CompressedBufferTooSmall);
@@ -228,13 +231,13 @@ namespace CharLS
             _position = _buffer.data();
             _compressedLength = _buffer.size();
         }
-
+*/
         private void Flush()
         {
-            if (_compressedLength < 4)
+            /*if (_compressedLength < 4)
             {
                 OverFlow();
-            }
+            }*/
 
             for (int i = 0; i < 4; ++i)
             {
@@ -243,18 +246,18 @@ namespace CharLS
                 if (_isFFWritten)
                 {
                     // JPEG-LS requirement (T.87, A.1) to detect markers: after a xFF value a single 0 bit needs to be inserted.
-                    *_position = static_cast<uint8_t>(_bitBuffer >> 25);
+                    _compressedStream[_position] = (byte)(_bitBuffer >> 25);
                     _bitBuffer = _bitBuffer << 7;
                     _freeBitCount += 7;
                 }
                 else
                 {
-                    *_position = static_cast<uint8_t>(_bitBuffer >> 24);
+                    _compressedStream[_position] = (byte)(_bitBuffer >> 24);
                     _bitBuffer = _bitBuffer << 8;
                     _freeBitCount += 8;
                 }
 
-                _isFFWritten = *_position == 0xFF;
+                _isFFWritten = _compressedStream[_position] == 0xFF;
                 _position++;
                 _compressedLength--;
                 _bytesWritten++;

@@ -87,6 +87,54 @@ namespace CharLS
             }
         }
 
+        public int Length
+        {
+            get
+            {
+                if (!_canSeek) throw new InvalidOperationException();
+                return _isStream ? (int)_rawStream.Length : _arrayLength;
+            }
+        }
+
+        public byte this[int index]
+        {
+            get
+            {
+                if (_isStream)
+                {
+                    if (!_canSeek || !_canRead) throw new InvalidOperationException();
+
+                    var currPos = _rawStream.Position;
+                    _rawStream.Position = index;
+                    var value = _rawStream.ReadByte();
+                    _rawStream.Position = currPos;
+
+                    if (value < 0) throw new EndOfStreamException();
+                    return (byte)value;
+                }
+                else
+                {
+                    return _rawData[index];
+                }
+            }
+
+            set
+            {
+                if (_isStream)
+                {
+                    if (!_canSeek || !_canWrite) throw new InvalidOperationException();
+
+                    var currPos = _rawStream.Position;
+                    _rawStream.Position = index;
+                    _rawStream.WriteByte(value);
+                    _rawStream.Position = currPos;
+                }
+                else
+                {
+                    _rawData[index] = value;
+                }
+            }
+        }
         public void Skip(int count)
         {
             Position += count;

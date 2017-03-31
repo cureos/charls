@@ -270,7 +270,7 @@ namespace CharLS
         private int GetCurBytePos()
         {
             int validBits = _validBits;
-            uint8_t* compressedBytes = _position;
+            int compressedBytes = _position;
 
             for (;;)
             {
