@@ -62,22 +62,22 @@ namespace CharLS
             {
                 // Q is not used when k != 0
                 int merrval = GetMappedErrVal(nerr);
-                Tuple<int, int> paircode = CreateEncodedValue(k, merrval);
-                if (paircode.Item1 > CTable.cbit) break;
+                var paircode = CreateEncodedValue(k, merrval);
+                if (paircode.Key > CTable.cbit) break;
 
-                Code code = new Code(nerr, paircode.Item1);
-                table.AddEntry((byte)paircode.Item2, code);
+                Code code = new Code(nerr, paircode.Key);
+                table.AddEntry((byte)paircode.Value, code);
             }
 
             for (short nerr = -1; ; nerr--)
             {
                 // Q is not used when k != 0
                 int merrval = GetMappedErrVal(nerr);
-                Tuple<int, int> paircode = CreateEncodedValue(k, merrval);
-                if (paircode.Item1 > CTable.cbit) break;
+                var paircode = CreateEncodedValue(k, merrval);
+                if (paircode.Key > CTable.cbit) break;
 
-                Code code = new Code(nerr, paircode.Item1);
-                table.AddEntry((byte)paircode.Item2, code);
+                Code code = new Code(nerr, paircode.Key);
+                table.AddEntry((byte)paircode.Value, code);
             }
 
             return table;
@@ -85,10 +85,10 @@ namespace CharLS
 
         // Functions to build tables used to decode short golomb codes.
 
-        private static Tuple<int, int> CreateEncodedValue(int k, int mappedError)
+        private static KeyValuePair<int, int> CreateEncodedValue(int k, int mappedError)
         {
             int highbits = mappedError >> k;
-            return Tuple.Create(highbits + k + 1, (1 << k) | (mappedError & (1 << k) - 1));
+            return new KeyValuePair<int, int>(highbits + k + 1, (1 << k) | (mappedError & (1 << k) - 1));
         }
 
         private static sbyte QuantizeGratientOrg(JpegLSPresetCodingParameters preset, int NEAR, int Di)
