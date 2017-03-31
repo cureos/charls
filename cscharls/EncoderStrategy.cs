@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 
 using static CharLS.util;
 
@@ -16,6 +17,8 @@ namespace CharLS
 
     public sealed class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IEncoderStrategy where TSample : struct
     {
+        private readonly int _sizeOfPixel = Marshal.SizeOf(default(TPixel));
+
         private DecoderStrategy<TSample, TPixel> _qdecoder; // TODO Skip?
 
         private IProcessLine _processLine;
@@ -63,7 +66,9 @@ namespace CharLS
 
         protected override void OnLineBegin(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride)
         {
-            _processLine.NewLineRequested(ptypeBuffer, 0, pixelStride, cpixel);
+            var bytes = new byte[cpixel * _sizeOfPixel];
+            _processLine.NewLineRequested(bytes, pixelStride, cpixel);
+            ptypeBuffer.FromBytes(bytes);
         }
 
         protected override void OnLineEnd(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride)

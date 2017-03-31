@@ -1,10 +1,14 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
+using System.Runtime.InteropServices;
+
 namespace CharLS
 {
     public class Subarray<T>
     {
+        private readonly int _typeSize = Marshal.SizeOf(default(T));
+
         private readonly T[] _array;
 
         internal Subarray(T[] array, int offset, int count)
@@ -34,6 +38,18 @@ namespace CharLS
             {
                 _array[Offset + index] = value;
             }
+        }
+
+        public byte[] ToBytes()
+        {
+            var bytes = new byte[Count * _typeSize];
+            _array.CopyTo(bytes, Offset, Count, 0);
+            return bytes;
+        }
+
+        public void FromBytes(byte[] bytes)
+        {
+            bytes.CopyTo(_array, 0, Offset, Count);
         }
     }
 }

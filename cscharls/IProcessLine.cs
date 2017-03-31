@@ -13,8 +13,8 @@ namespace CharLS
     //
     public interface IProcessLine
     {
-        void NewLineDecoded(byte[] source, int sourceOffset, int sourceStride, int pixelCount);
+        void NewLineDecoded(byte[] source, int sourceStride, int pixelCount);
 
-        void NewLineRequested(byte[] dest, int destOffset, int destStride, int pixelCount);
+        void NewLineRequested(byte[] dest, int destStride, int pixelCount);
     }
 }

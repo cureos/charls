@@ -73,7 +73,7 @@ namespace CharLS
 
         protected override void OnLineEnd(int pixelCount, Subarray<TPixel> ptypeBuffer, int pixelStride)
         {
-            _processLine.NewLineDecoded(ptypeBuffer, 0, pixelStride, pixelCount);
+            _processLine.NewLineDecoded(ptypeBuffer.ToBytes(), pixelStride, pixelCount);
         }
 
         protected override void Init(ByteStreamInfo compressedStream)

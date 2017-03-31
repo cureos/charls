@@ -23,21 +23,21 @@ namespace CharLS
             _position = 0;
         }
 
-        public void NewLineDecoded(byte[] source, int sourceOffset, int sourceStride, int pixelCount)
+        public void NewLineDecoded(byte[] source, int sourceStride, int pixelCount)
         {
-            _rawData.Write(source, sourceOffset, pixelCount * _bytesPerPixel);
+            _rawData.Write(source, 0, pixelCount * _bytesPerPixel);
         }
 
-        public void NewLineRequested(byte[] dest, int destOffset, int destStride, int pixelCount)
+        public void NewLineRequested(byte[] dest, int destStride, int pixelCount)
         {
             var bytesToRead = pixelCount * _bytesPerPixel;
-            var bytesRead = _rawData.Read(dest, destOffset, pixelCount * _bytesPerPixel);
+            var bytesRead = _rawData.Read(dest, 0, pixelCount * _bytesPerPixel);
             if (bytesRead < bytesToRead) throw new charls_error(ApiResult.CompressedBufferTooSmall);
 
             // TODO Are the remaining operations stream specific?
             if (_bytesPerPixel == 2)
             {
-                ByteSwap(dest, destOffset, bytesToRead);
+                ByteSwap(dest, 0, bytesToRead);
             }
 
             if (_bytesPerLine > bytesToRead)

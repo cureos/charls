@@ -30,16 +30,16 @@ namespace CharLS
             _rawPixels = rawStream;
         }
 
-        public void NewLineDecoded(byte[] source, int sourceOffset, int sourceStride, int pixelCount)
+        public void NewLineDecoded(byte[] source, int sourceStride, int pixelCount)
         {
             var bytesToWrite = pixelCount * _params.components * _sizeofSample;
             if (bytesToWrite > _buffer.Length) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
 
-            DecodeTransform(source, sourceOffset, _buffer, pixelCount, sourceStride);
+            DecodeTransform(source, 0, _buffer, pixelCount, sourceStride);
             _rawPixels.Write(_buffer, 0, bytesToWrite);
         }
 
-        public void NewLineRequested(byte[] dest, int destOffset, int destStride, int pixelCount)
+        public void NewLineRequested(byte[] dest, int destStride, int pixelCount)
         {
             var bytesToRead = pixelCount * _params.components * _sizeofSample;
             if (!_rawPixels.Require(true, bytesToRead))
@@ -49,7 +49,7 @@ namespace CharLS
             }
 
             var bytesRead = _rawPixels.Read(_buffer, 0, bytesToRead);
-            Transform(_buffer, dest, destOffset, destStride, pixelCount);
+            Transform(_buffer, dest, 0, destStride, pixelCount);
             if (bytesRead < _params.stride) _rawPixels.Skip(_params.stride - bytesRead);
         }
 
@@ -64,7 +64,7 @@ namespace CharLS
             const int SamplesPerPixel = 4;
 
             var input = new TSample[SamplesPerPixel * pixelStrideIn];
-            ptypeInput.CopyTo(input, inputOffset, SamplesPerPixel * pixelStrideIn);
+            ptypeInput.CopyTo(input, inputOffset, 0, SamplesPerPixel * pixelStrideIn);
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
             var output = new Quad<TSample>[pixelStride];
@@ -80,7 +80,7 @@ namespace CharLS
                 output[x] = (Quad<TSample>)pixel;
             }
 
-            output.CopyTo(ptypeBuffer, 0, pixelStride);
+            output.CopyTo(ptypeBuffer, 0, pixelStride, 0);
         }
 
         private static void TransformQuadToLine(
@@ -94,7 +94,7 @@ namespace CharLS
             const int SamplesPerPixel = 4;
 
             var input = new Quad<TSample>[pixelStrideIn];
-            ptypeBufferIn.CopyTo(input, 0, pixelStrideIn);
+            ptypeBufferIn.CopyTo(input, 0, 0, pixelStrideIn);
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
             var output = new TSample[SamplesPerPixel * pixelStride];
@@ -110,14 +110,14 @@ namespace CharLS
                 output[x + 3 * pixelStride] = colorTranformed.A;
             }
 
-            output.CopyTo(ptypeBuffer, bufferOffset, SamplesPerPixel * pixelStride);
+            output.CopyTo(ptypeBuffer, 0, SamplesPerPixel * pixelStride, bufferOffset);
         }
 
         private static void TransformRgbToBgr(byte[] pDest, int samplesPerPixel, int pixelCount)
         {
             var length = samplesPerPixel * pixelCount;
             var dest = new TSample[length];
-            pDest.CopyTo(dest, 0, length);
+            pDest.CopyTo(dest, 0, 0, length);
 
             for (var i = 0; i < length; i += samplesPerPixel)
             {
@@ -126,7 +126,7 @@ namespace CharLS
                 dest[i + 2] = tmp;
             }
 
-            dest.CopyTo(pDest, 0, length);
+            dest.CopyTo(pDest, 0, length, 0);
         }
 
         private static void TransformLine(
@@ -138,7 +138,7 @@ namespace CharLS
             IColorTransform<TSample> transform)
         {
             var src = new Triplet<TSample>[pixelCount];
-            pSrc.CopyTo(src, srcOffset, pixelCount);
+            pSrc.CopyTo(src, srcOffset, 0, pixelCount);
 
             var dest = new Triplet<TSample>[pixelCount];
             for (var i = 0; i < pixelCount; ++i)
@@ -146,7 +146,7 @@ namespace CharLS
                 dest[i] = (Triplet<TSample>)transform.Transform(src[i].v1, src[i].v2, src[i].v3);
             }
 
-            dest.CopyTo(pDest, destOffset, pixelCount);
+            dest.CopyTo(pDest, 0, pixelCount, destOffset);
         }
 
         private static void TransformLineToTriplet(
@@ -160,7 +160,7 @@ namespace CharLS
             const int SamplesPerPixel = 3;
 
             var input = new TSample[SamplesPerPixel * pixelStrideIn];
-            ptypeInput.CopyTo(input, inputOffset, SamplesPerPixel * pixelStrideIn);
+            ptypeInput.CopyTo(input, inputOffset, 0, SamplesPerPixel * pixelStrideIn);
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
             var output = new Triplet<TSample>[pixelStride];
@@ -175,7 +175,7 @@ namespace CharLS
                 output[x] = (Triplet<TSample>)pixel;
             }
 
-            output.CopyTo(ptypeBuffer, 0, pixelStride);
+            output.CopyTo(ptypeBuffer, 0, pixelStride, 0);
         }
 
         private static void TransformTripletToLine(
@@ -189,7 +189,7 @@ namespace CharLS
             const int SamplesPerPixel = 3;
 
             var input = new Triplet<TSample>[pixelStrideIn];
-            ptypeBufferIn.CopyTo(input, 0, pixelStrideIn);
+            ptypeBufferIn.CopyTo(input, 0, 0, pixelStrideIn);
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
             var output = new TSample[SamplesPerPixel * pixelStride];
@@ -204,7 +204,7 @@ namespace CharLS
                 output[x + 2 * pixelStride] = colorTranformed.B;
             }
 
-            output.CopyTo(ptypeBuffer, bufferOffset, SamplesPerPixel * pixelStride);
+            output.CopyTo(ptypeBuffer, 0, SamplesPerPixel * pixelStride, bufferOffset);
         }
 
         private void Transform(byte[] source, byte[] dest, int destOffset, int destStride, int pixelCount)
