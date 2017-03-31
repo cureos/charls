@@ -9,7 +9,13 @@ using static CharLS.util;
 
 namespace CharLS
 {
-    public class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IDecoderStrategy where TSample : struct
+    public interface IDecoderStrategy : ICodecStrategy
+    {
+        void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData);
+
+    }
+
+    public sealed class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IDecoderStrategy where TSample : struct
     {
         private const int bufferbits = sizeof(int) * 8;
 
@@ -96,11 +102,11 @@ namespace CharLS
 
         protected override void EndScan()
         {
-            if ((*_position) != 0xFF)
+            if (*_position != 0xFF)
             {
                 ReadBit();
 
-                if ((*_position) != 0xFF) throw new charls_error(ApiResult.TooMuchCompressedData);
+                if (*_position != 0xFF) throw new charls_error(ApiResult.TooMuchCompressedData);
             }
 
             if (_readCache != 0) throw new charls_error(ApiResult.TooMuchCompressedData);
@@ -111,7 +117,7 @@ namespace CharLS
             int sign = BitWiseSign(Qs);
             JlsContext ctx = _contexts[ApplySign(Qs, sign)];
             int k = ctx.GetGolomb();
-            int Px = traits.CorrectPrediction(pred + ApplySign(ctx.C, sign));
+            int Px = _traits.CorrectPrediction(pred + ApplySign(ctx.C, sign));
 
             int ErrVal;
             Code code = decodingTables[k].Get(PeekByte());
@@ -123,24 +129,24 @@ namespace CharLS
             }
             else
             {
-                ErrVal = UnMapErrVal(DecodeValue(k, traits.LIMIT, traits.qbpp));
+                ErrVal = UnMapErrVal(DecodeValue(k, _traits.LIMIT, _traits.qbpp));
                 if (Math.Abs(ErrVal) > 65535)
                     throw new charls_error(ApiResult.InvalidCompressedData);
             }
             if (k == 0)
             {
-                ErrVal = ErrVal ^ ctx.GetErrorCorrection(traits.NEAR);
+                ErrVal = ErrVal ^ ctx.GetErrorCorrection(_traits.NEAR);
             }
-            ctx.UpdateVariables(ErrVal, traits.NEAR, traits.RESET);
+            ctx.UpdateVariables(ErrVal, _traits.NEAR, _traits.RESET);
             ErrVal = ApplySign(ErrVal, sign);
-            return traits.ComputeReconstructedSample(Px, ErrVal);
+            return _traits.ComputeReconstructedSample(Px, ErrVal);
         }
 
         protected override int DoRunMode(int startIndex)
         {
             TPixel Ra = _currentLine[startIndex - 1];
 
-            int runLength = DecodeRunPixels(Ra, _currentLine + startIndex, _width - startIndex);
+            int runLength = DecodeRunPixels(Ra, _currentLine, startIndex, _width - startIndex);
             int endIndex = startIndex + runLength;
 
             if (endIndex == _width)
@@ -367,10 +373,19 @@ namespace CharLS
         private int DecodeRIError(CContextRunMode ctx)
         {
             int k = ctx.GetGolomb();
-            int EMErrval = DecodeValue(k, traits.LIMIT - J[_RUNindex] - 1, traits.qbpp);
+            int EMErrval = DecodeValue(k, _traits.LIMIT - J[_RUNindex] - 1, _traits.qbpp);
             int Errval = ctx.ComputeErrVal(EMErrval + ctx._nRItype, k);
             ctx.UpdateVariables(Errval, EMErrval);
             return Errval;
+        }
+
+        private TPixel DecodeRIPixel(TPixel Ra, TPixel Rb)
+        {
+            return
+                (TPixel)
+                (_isPixelTriplet
+                     ? DecodeRIPixel((ITriplet<TSample>)Ra, (ITriplet<TSample>)Rb)
+                     : (object)DecodeRIPixel((int)(object)Ra, (int)(object)Rb));
         }
 
         private ITriplet<TSample> DecodeRIPixel(ITriplet<TSample> Ra, ITriplet<TSample> Rb)
@@ -379,29 +394,29 @@ namespace CharLS
             int Errval2 = DecodeRIError(_contextRunmode[0]);
             int Errval3 = DecodeRIError(_contextRunmode[0]);
 
-            return new Triplet<TSample>(traits.ComputeReconstructedSample(Rb.v1, Errval1 * Sign(Rb.v1 - Ra.v1)),
-                                   traits.ComputeReconstructedSample(Rb.v2, Errval2 * Sign(Rb.v2 - Ra.v2)),
-                                   traits.ComputeReconstructedSample(Rb.v3, Errval3 * Sign(Rb.v3 - Ra.v3)));
+            return new Triplet<TSample>(_traits.ComputeReconstructedSample(Rb.v1, Errval1 * Sign(Rb.v1 - Ra.v1)),
+                                   _traits.ComputeReconstructedSample(Rb.v2, Errval2 * Sign(Rb.v2 - Ra.v2)),
+                                   _traits.ComputeReconstructedSample(Rb.v3, Errval3 * Sign(Rb.v3 - Ra.v3)));
         }
 
 
         private TSample DecodeRIPixel(int Ra, int Rb)
         {
-            if (Math.Abs(Ra - Rb) <= traits.NEAR)
+            if (Math.Abs(Ra - Rb) <= _traits.NEAR)
             {
                 int ErrVal = DecodeRIError(_contextRunmode[1]);
-                return traits.ComputeReconstructedSample(Ra, ErrVal);
+                return _traits.ComputeReconstructedSample(Ra, ErrVal);
             }
             else
             {
                 int ErrVal = DecodeRIError(_contextRunmode[0]);
-                return traits.ComputeReconstructedSample(Rb, ErrVal * Sign(Rb - Ra));
+                return _traits.ComputeReconstructedSample(Rb, ErrVal * Sign(Rb - Ra));
             }
         }
 
         // RunMode: Functions that handle run-length encoding
 
-        private int DecodeRunPixels(TPixel Ra, TPixel* startPos, int cpixelMac)
+        private int DecodeRunPixels(TPixel Ra, TPixel[] pixels, int startPos, int cpixelMac)
         {
             int index = 0;
             while (ReadBit())
@@ -410,7 +425,7 @@ namespace CharLS
                 index += count;
                 Debug.Assert(index <= cpixelMac);
 
-                if (count == (1 << J[_RUNindex]))
+                if (count == 1 << J[_RUNindex])
                 {
                     IncrementRunIndex();
                 }
@@ -422,7 +437,7 @@ namespace CharLS
             if (index != cpixelMac)
             {
                 // incomplete run.
-                index += (J[_RUNindex] > 0) ? ReadValue(J[_RUNindex]) : 0;
+                index += J[_RUNindex] > 0 ? ReadValue(J[_RUNindex]) : 0;
             }
 
             if (index > cpixelMac)
@@ -430,7 +445,7 @@ namespace CharLS
 
             for (int i = 0; i < index; ++i)
             {
-                startPos[i] = Ra;
+                pixels[startPos + i] = Ra;
             }
 
             return index;

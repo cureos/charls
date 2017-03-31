@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-using static CharLS.util;
-
 namespace CharLS
 {
     public class JpegMarkerSegment : IJpegSegment
@@ -51,8 +49,8 @@ namespace CharLS
             // Create a Frame Header as defined in T.87, C.2.2 and T.81, B.2.2
             var content = new List<byte>();
             content.Add((byte)bitsPerSample); // P = Sample precision
-            push_back(content, (ushort)height); // Y = Number of lines
-            push_back(content, (ushort)width); // X = Number of samples per line
+            Add(content, (ushort)height); // Y = Number of lines
+            Add(content, (ushort)width); // X = Number of samples per line
 
             // Components
             content.Add((byte)componentCount); // Nf = Number of image components in frame
@@ -83,10 +81,10 @@ namespace CharLS
 
             // Create a JPEG APP0 segment in the JPEG File Interchange Format (JFIF), v1.02
             var content = new List<byte> { (byte)'J', (byte)'F', (byte)'I', (byte)'F', (byte)'\0' };
-            push_back(content, (ushort)jfif.version);
+            Add(content, (ushort)jfif.version);
             content.Add((byte)jfif.units);
-            push_back(content, (ushort)jfif.Xdensity);
-            push_back(content, (ushort)jfif.Ydensity);
+            Add(content, (ushort)jfif.Xdensity);
+            Add(content, (ushort)jfif.Ydensity);
 
             // thumbnail
             content.Add((byte)jfif.Xthumbnail);
@@ -116,11 +114,11 @@ namespace CharLS
             // Parameter ID. 0x01 = JPEG-LS preset coding parameters.
             content.Add(1);
 
-            push_back(content, (ushort)presets.MaximumSampleValue);
-            push_back(content, (ushort)presets.Threshold1);
-            push_back(content, (ushort)presets.Threshold2);
-            push_back(content, (ushort)presets.Threshold3);
-            push_back(content, (ushort)presets.ResetValue);
+            Add(content, (ushort)presets.MaximumSampleValue);
+            Add(content, (ushort)presets.Threshold1);
+            Add(content, (ushort)presets.Threshold2);
+            Add(content, (ushort)presets.Threshold3);
+            Add(content, (ushort)presets.ResetValue);
 
             return new JpegMarkerSegment(JpegMarkerCode.JpegLSPresetParameters, content);
         }
@@ -169,6 +167,12 @@ namespace CharLS
             content.Add(0); // transformation
 
             return new JpegMarkerSegment(JpegMarkerCode.StartOfScan, content);
+        }
+
+        private static void Add(IList<byte> values, ushort value)
+        {
+            values.Add((byte)(value / 0x100));
+            values.Add((byte)(value % 0x100));
         }
     }
 }

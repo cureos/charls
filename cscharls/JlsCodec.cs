@@ -37,22 +37,23 @@ namespace CharLS
             };
 
         // Lookup tables: sample differences to bin indexes. 
-        protected static readonly IList<sbyte> rgquant8Ll = CreateQLutLossless(8);
+        protected static readonly sbyte[] rgquant8Ll = CreateQLutLossless(8);
 
-        protected static readonly IList<sbyte> rgquant10Ll = CreateQLutLossless(10);
+        protected static readonly sbyte[] rgquant10Ll = CreateQLutLossless(10);
 
-        protected static readonly IList<sbyte> rgquant12Ll = CreateQLutLossless(12);
+        protected static readonly sbyte[] rgquant12Ll = CreateQLutLossless(12);
 
-        protected static readonly IList<sbyte> rgquant16Ll = CreateQLutLossless(16);
-
-        protected JlsCodec()
-        {
-        }
+        protected static readonly sbyte[] rgquant16Ll = CreateQLutLossless(16);
 
         protected static int GetMappedErrVal(int Errval)
         {
             int mappedError = (Errval >> (INT32_BITCOUNT - 2)) ^ (2 * Errval);
             return mappedError;
+        }
+
+        protected static int Sign(int n)
+        {
+            return (n >> (INT32_BITCOUNT - 1)) | 1;
         }
 
         private static CTable InitTable(int k)
@@ -104,12 +105,12 @@ namespace CharLS
 
             return 4;
         }
-        private static IList<sbyte> CreateQLutLossless(int cbit)
+        private static sbyte[] CreateQLutLossless(int cbit)
         {
             JpegLSPresetCodingParameters preset = ComputeDefault((1 << cbit) - 1, 0);
             int range = preset.MaximumSampleValue + 1;
 
-            var lut = new List<sbyte>(range * 2);
+            var lut = new sbyte[range * 2];
 
             for (int diff = -range; diff < range; diff++)
             {
@@ -125,7 +126,9 @@ namespace CharLS
         private readonly JlsParameters _params;
 
         // codec parameters
-        protected ITraits<TSample, TPixel> traits;
+        protected readonly ITraits<TSample, TPixel> _traits;
+
+        protected readonly bool _isPixelTriplet;
 
         protected JlsRect _rect;
 
@@ -151,11 +154,11 @@ namespace CharLS
         // quantization lookup table
         private sbyte[] _pquant;
 
-        private IList<sbyte> _rgquant;
-
         protected JlsCodec(ITraits<TSample, TPixel> inTraits, JlsParameters parameters)
         {
-            traits = inTraits;
+            _traits = inTraits;
+            _isPixelTriplet = Implements<TPixel, ITriplet<TSample>>();
+
             _params = parameters;
             _rect = new JlsRect();
             _width = parameters.width;
@@ -187,8 +190,7 @@ namespace CharLS
             return (sign ^ i) - sign;
         }
 
-
-        private int GetPredictedValue(int Ra, int Rb, int Rc)
+        private static int GetPredictedValue(int Ra, int Rb, int Rc)
         {
             // sign trick reduces the number of if statements (branches)
             int sgn = BitWiseSign(Rb - Ra);
@@ -214,7 +216,7 @@ namespace CharLS
 
         public void SetPresets(JpegLSPresetCodingParameters presets)
         {
-            JpegLSPresetCodingParameters presetDefault = ComputeDefault(traits.MAXVAL, traits.NEAR);
+            JpegLSPresetCodingParameters presetDefault = ComputeDefault(_traits.MAXVAL, _traits.NEAR);
 
             InitParams(
                 presets.Threshold1 != 0 ? presets.Threshold1 : presetDefault.Threshold1,
@@ -225,9 +227,9 @@ namespace CharLS
 
         private bool IsInterleaved()
         {
-            if (Info().interleaveMode == InterleaveMode.None) return false;
+            if (_params.interleaveMode == InterleaveMode.None) return false;
 
-            if (Info().components == 1) return false;
+            if (_params.components == 1) return false;
 
             return true;
         }
@@ -244,56 +246,50 @@ namespace CharLS
 
         // Sets up a lookup table to "Quantize" sample difference.
 
-        private JlsParameters Info()
-        {
-            return _params;
-        }
-
         private int QuantizeGratient(int Di)
         {
-            Debug.Assert(QuantizeGratientOrg(Di) == *(_pquant + Di));
-            return *(_pquant + Di);
+            var RANGE = _pquant.Length / 2;
+            Debug.Assert(QuantizeGratientOrg(Di) == _pquant[Di + RANGE]);
+            return _pquant[Di + RANGE];
         }
 
         private void InitQuantizationLUT()
         {
             // for lossless mode with default parameters, we have precomputed the luts for bitcounts 8, 10, 12 and 16.
-            if (traits.NEAR == 0 && traits.MAXVAL == (1 << traits.bpp) - 1)
+            if (_traits.NEAR == 0 && _traits.MAXVAL == (1 << _traits.bpp) - 1)
             {
-                JpegLSPresetCodingParameters presets = ComputeDefault(traits.MAXVAL, traits.NEAR);
+                JpegLSPresetCodingParameters presets = ComputeDefault(_traits.MAXVAL, _traits.NEAR);
                 if (presets.Threshold1 == T1 && presets.Threshold2 == T2 && presets.Threshold3 == T3)
                 {
-                    if (traits.bpp == 8)
+                    if (_traits.bpp == 8)
                     {
-                        _pquant = &rgquant8Ll[rgquant8Ll.size() / 2];
+                        _pquant = rgquant8Ll;
                         return;
                     }
-                    if (traits.bpp == 10)
+                    if (_traits.bpp == 10)
                     {
-                        _pquant = &rgquant10Ll[rgquant10Ll.size() / 2];
+                        _pquant = rgquant10Ll;
                         return;
                     }
-                    if (traits.bpp == 12)
+                    if (_traits.bpp == 12)
                     {
-                        _pquant = &rgquant12Ll[rgquant12Ll.size() / 2];
+                        _pquant = rgquant12Ll;
                         return;
                     }
-                    if (traits.bpp == 16)
+                    if (_traits.bpp == 16)
                     {
-                        _pquant = &rgquant16Ll[rgquant16Ll.size() / 2];
+                        _pquant = rgquant16Ll;
                         return;
                     }
                 }
             }
 
-            int RANGE = 1 << traits.bpp;
+            int RANGE = 1 << _traits.bpp;
+            _pquant = new sbyte[RANGE * 2];
 
-            _rgquant.resize(RANGE * 2);
-
-            _pquant = &_rgquant[RANGE];
             for (int i = -RANGE; i < RANGE; ++i)
             {
-                _pquant[i] = QuantizeGratientOrg(i);
+                _pquant[i + RANGE] = QuantizeGratientOrg(i);
             }
         }
 
@@ -302,8 +298,8 @@ namespace CharLS
             if (Di <= -T3) return -4;
             if (Di <= -T2) return -3;
             if (Di <= -T1) return -2;
-            if (Di < -traits.NEAR) return -1;
-            if (Di <= traits.NEAR) return 0;
+            if (Di < -_traits.NEAR) return -1;
+            if (Di <= _traits.NEAR) return 0;
             if (Di < T1) return 1;
             if (Di < T2) return 2;
             if (Di < T3) return 3;
@@ -313,36 +309,47 @@ namespace CharLS
 
         // DoLine: Encodes/Decodes a scanline of samples
 
-        private void DoLine(TSample* )
+        private void DoLine()
+        {
+            if (_isPixelTriplet)
+            {
+                DoTripletLine();
+            }
+            else
+            {
+                DoSingletLine();
+            }
+        }
+
+        private void DoSingletLine()
         {
             int index = 0;
-            int Rb = _previousLine[index - 1];
-            int Rd = _previousLine[index];
+            int Rb = (int)(object)_previousLine[index - 1];
+            int Rd = (int)(object)_previousLine[index];
 
             while (index < _width)
             {
-                const int Ra = _currentLine[index - 1];
-                const int Rc = Rb;
+                int Ra = (int)(object)_currentLine[index - 1];
+                int Rc = Rb;
                 Rb = Rd;
-                Rd = _previousLine[index + 1];
+                Rd = (int)(object)_previousLine[index + 1];
 
-                const int Qs =
-                    ComputeContextID(QuantizeGratient(Rd - Rb), QuantizeGratient(Rb - Rc), QuantizeGratient(Rc - Ra));
+                int Qs = ComputeContextID(
+                    QuantizeGratient(Rd - Rb),
+                    QuantizeGratient(Rb - Rc),
+                    QuantizeGratient(Rc - Ra));
 
                 if (Qs != 0)
                 {
-                    _currentLine[index] = DoRegular(
-                        Qs,
-                        _currentLine[index],
-                        GetPredictedValue(Ra, Rb, Rc),
-                        static_cast<STRATEGY*>(nullptr));
+                    _currentLine[index] =
+                        (TPixel)(object)DoRegular(Qs, (int)(object)_currentLine[index], GetPredictedValue(Ra, Rb, Rc));
                     index++;
                 }
                 else
                 {
-                    index += DoRunMode(index, static_cast<STRATEGY*>(nullptr));
-                    Rb = _previousLine[index - 1];
-                    Rd = _previousLine[index];
+                    index += DoRunMode(index);
+                    Rb = (int)(object)_previousLine[index - 1];
+                    Rd = (int)(object)_previousLine[index];
                 }
             }
         }
@@ -350,15 +357,15 @@ namespace CharLS
 
         // DoLine: Encodes/Decodes a scanline of triplets in ILV_TSample mode
 
-        private void DoLine(Triplet<TSample>* )
+        private void DoTripletLine()
         {
             int index = 0;
             while (index < _width)
             {
-                Triplet<TSample> Ra = _currentLine[index - 1];
-                const Triplet<TSample> Rc = _previousLine[index - 1];
-                const Triplet<TSample> Rb = _previousLine[index];
-                const Triplet<TSample> Rd = _previousLine[index + 1];
+                var Ra = (ITriplet<TSample>)_currentLine[index - 1];
+                var Rc = (ITriplet<TSample>)_previousLine[index - 1];
+                var Rb = (ITriplet<TSample>)_previousLine[index];
+                var Rd = (ITriplet<TSample>)_previousLine[index + 1];
 
                 int Qs1 = ComputeContextID(
                     QuantizeGratient(Rd.v1 - Rb.v1),
@@ -379,12 +386,13 @@ namespace CharLS
                 }
                 else
                 {
-                    Triplet<TSample> Rx =
+                    var x = (ITriplet<TSample>)_currentLine[index];
+                    ITriplet <TSample> Rx =
                         new Triplet<TSample>(
-                            DoRegular(Qs1, _currentLine[index].v1, GetPredictedValue(Ra.v1, Rb.v1, Rc.v1)),
-                            DoRegular(Qs2, _currentLine[index].v2, GetPredictedValue(Ra.v2, Rb.v2, Rc.v2)),
-                            DoRegular(Qs3, _currentLine[index].v3, GetPredictedValue(Ra.v3, Rb.v3, Rc.v3)));
-                    _currentLine[index] = Rx;
+                            DoRegular(Qs1, x.v1, GetPredictedValue(Ra.v1, Rb.v1, Rc.v1)),
+                            DoRegular(Qs2, x.v2, GetPredictedValue(Ra.v2, Rb.v2, Rc.v2)),
+                            DoRegular(Qs3, x.v3, GetPredictedValue(Ra.v3, Rb.v3, Rc.v3)));
+                    _currentLine[index] = (TPixel)Rx;
                     index++;
                 }
             }
@@ -396,13 +404,13 @@ namespace CharLS
         // In ILV_NONE mode, DoScan is called for each component
         protected void DoScan()
         {
-            const int pixelstride = _width + 4;
-            const int components = Info().interleaveMode == charls::InterleaveMode::Line ? Info().components : 1;
+            int pixelstride = _width + 4;
+            int components = _params.interleaveMode == InterleaveMode.Line ? _params.components : 1;
 
             var vectmp = new List<TPixel>(2 * components * pixelstride);
             var rgRUNindex = new List<int>(components);
 
-            for (int line = 0; line < Info().height; ++line)
+            for (int line = 0; line < _params.height; ++line)
             {
                 _previousLine = &vectmp[1];
                 _currentLine = &vectmp[1 + components * pixelstride];
@@ -420,7 +428,7 @@ namespace CharLS
                     // initialize edge pixels used for prediction
                     _previousLine[_width] = _previousLine[_width - 1];
                     _currentLine[-1] = _previousLine[0];
-                    DoLine(static_cast<TPixel*>(nullptr)); // dummy arg for overload resolution
+                    DoLine(); // dummy arg for overload resolution
 
                     rgRUNindex[component] = _RUNindex;
                     _previousLine += pixelstride;
@@ -445,68 +453,58 @@ namespace CharLS
                            ? std::unique_ptr<ProcessLine>(
                                std::make_unique<PostProcesSingleComponent>(
                                    info.rawData,
-                                   Info(),
+                                   _params,
                                    sizeof(typename
                 TRAITS::TPixel))) :
                 std::unique_ptr<ProcessLine>(
                     std::make_unique<PostProcesSingleStream>(
                         info.rawStream,
-                        Info(),
+                        _params,
                         sizeof(typename
                 TRAITS::TPixel)))
                 ;
             }
 
-            if (Info().colorTransformation == ColorTransformation.None) return std::make_unique < ProcessTransformed < TransformNone < typename
-            TRAITS::TSample >> > (info, Info(), TransformNone<TSample>());
+            if (_params.colorTransformation == ColorTransformation.None) return new ProcessTransformed<TSample>(info, _params, new TransformNone<TSample>());
 
-            if (Info().bitsPerSample == Marshal.SizeOf(default(TSample)) * 8)
+            if (_params.bitsPerSample == Marshal.SizeOf(default(TSample)) * 8)
             {
-                switch (Info().colorTransformation)
+                switch (_params.colorTransformation)
                 {
                     case ColorTransformation.HP1:
-                        return std::make_unique<ProcessTransformed<TransformHp1<TSample>>>(
-                            info,
-                            Info(),
-                            TransformHp1<TSample>());
+                        return new ProcessTransformed<TSample>(info, _params, new TransformHp1<TSample>());
                     case ColorTransformation.HP2:
-                        return std::make_unique<ProcessTransformed<TransformHp2<TSample>>>(
-                            info,
-                            Info(),
-                            TransformHp2<TSample>());
+                        return new ProcessTransformed<TSample>(info, _params, new TransformHp2<TSample>());
                     case ColorTransformation.HP3:
-                        return std::make_unique<ProcessTransformed<TransformHp3<TSample>>>(
-                            info,
-                            Info(),
-                            TransformHp3<TSample>());
+                        return new ProcessTransformed<TSample>(info, _params, new TransformHp3<TSample>());
                     default:
-                        var message = $"Color transformation {Info().colorTransformation} is not supported.";
+                        var message = $"Color transformation {_params.colorTransformation} is not supported.";
                         throw new charls_error(ApiResult.UnsupportedColorTransform, message);
                 }
             }
 
-            if (Info().bitsPerSample > 8)
+            if (_params.bitsPerSample > 8)
             {
-                int shift = 16 - Info().bitsPerSample;
-                switch (Info().colorTransformation)
+                int shift = 16 - _params.bitsPerSample;
+                switch (_params.colorTransformation)
                 {
                     case ColorTransformation.HP1:
-                        return std::make_unique<ProcessTransformed<TransformShifted<TransformHp1<uint16_t>>>>(
+                        return new ProcessTransformed<ushort>(
                             info,
-                            Info(),
-                            TransformShifted<TransformHp1<uint16_t>>(shift));
+                            _params,
+                            new TransformShifted<ushort, TransformHp1<ushort>>(shift));
                     case ColorTransformation.HP2:
-                        return std::make_unique<ProcessTransformed<TransformShifted<TransformHp2<uint16_t>>>>(
+                        return new ProcessTransformed<ushort>(
                             info,
-                            Info(),
-                            TransformShifted<TransformHp2<uint16_t>>(shift));
+                            _params,
+                            new TransformShifted<ushort, TransformHp2<ushort>>(shift));
                     case ColorTransformation.HP3:
-                        return std::make_unique<ProcessTransformed<TransformShifted<TransformHp3<uint16_t>>>>(
+                        return new ProcessTransformed<ushort>(
                             info,
-                            Info(),
-                            TransformShifted<TransformHp3<uint16_t>>(shift));
+                            _params,
+                            new TransformShifted<ushort, TransformHp3<ushort>>(shift));
                     default:
-                        var message = $"Color transformation {Info().colorTransformation} is not supported.";
+                        var message = $"Color transformation {_params.colorTransformation} is not supported.";
                         throw new charls_error(ApiResult.UnsupportedColorTransform, message);
                 }
             }
@@ -514,9 +512,7 @@ namespace CharLS
             throw new charls_error(ApiResult.UnsupportedBitDepthForTransform);
         }
 
-
         // Initialize the codec data structures. Depends on JPEG-LS parameters like Threshold1-Threshold3.
-
         private void InitParams(int t1, int t2, int t3, int nReset)
         {
             T1 = t1;
@@ -525,14 +521,14 @@ namespace CharLS
 
             InitQuantizationLUT();
 
-            int A = Math.Max(2, (traits.RANGE + 32) / 64);
+            int A = Math.Max(2, (_traits.RANGE + 32) / 64);
             for (uint Q = 0; Q < ContextsCount; ++Q)
             {
                 _contexts[Q] = new JlsContext(A);
             }
 
-            _contextRunmode[0] = new CContextRunMode(Math.Max(2, (traits.RANGE + 32) / 64), 0, nReset);
-            _contextRunmode[1] = new CContextRunMode(Math.Max(2, (traits.RANGE + 32) / 64), 1, nReset);
+            _contextRunmode[0] = new CContextRunMode(Math.Max(2, (_traits.RANGE + 32) / 64), 0, nReset);
+            _contextRunmode[1] = new CContextRunMode(Math.Max(2, (_traits.RANGE + 32) / 64), 1, nReset);
             _RUNindex = 0;
         }
     }

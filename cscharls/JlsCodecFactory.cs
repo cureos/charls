@@ -1,9 +1,6 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
-using System;
-using System.Reflection;
-
 using static CharLS.util;
 
 namespace CharLS
@@ -39,12 +36,12 @@ namespace CharLS
         private static ICodecStrategy CreateCodec<TSample, TPixel>(ITraits<TSample, TPixel> t, JlsParameters parameters)
             where TSample : struct
         {
-            if (typeof(IDecoderStrategy).GetTypeInfo().IsAssignableFrom(typeof(TStrategy).GetTypeInfo()))
+            if (Implements<TStrategy, IDecoderStrategy>())
             {
                 return new DecoderStrategy<TSample, TPixel>(t, parameters);
             }
 
-            if (typeof(IEncoderStrategy).GetTypeInfo().IsAssignableFrom(typeof(TStrategy).GetTypeInfo()))
+            if (Implements<TStrategy, IEncoderStrategy>())
             {
                 return new EncoderStrategy<TSample, TPixel>(t, parameters);
             }

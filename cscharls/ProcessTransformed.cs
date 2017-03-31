@@ -2,7 +2,6 @@
 // Licensed under the BSD-3 license.
 
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace CharLS

@@ -9,7 +9,12 @@ using static CharLS.util;
 
 namespace CharLS
 {
-    public class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IEncoderStrategy where TSample : struct
+    public interface IEncoderStrategy : ICodecStrategy
+    {
+        int EncodeScan(IProcessLine processLine, ByteStreamInfo compressedData);
+    }
+
+    public sealed class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IEncoderStrategy where TSample : struct
     {
         private DecoderStrategy<TSample, TPixel> _qdecoder;
 
@@ -106,28 +111,26 @@ namespace CharLS
             int sign = BitWiseSign(Qs);
             JlsContext ctx = _contexts[ApplySign(Qs, sign)];
             int k = ctx.GetGolomb();
-            int Px = traits.CorrectPrediction(pred + ApplySign(ctx.C, sign));
-            int ErrVal = traits.ComputeErrVal(ApplySign(x - Px, sign));
+            int Px = _traits.CorrectPrediction(pred + ApplySign(ctx.C, sign));
+            int ErrVal = _traits.ComputeErrVal(ApplySign(x - Px, sign));
 
-            EncodeMappedValue(k, GetMappedErrVal(ctx.GetErrorCorrection(k | traits.NEAR) ^ ErrVal), traits.LIMIT);
-            ctx.UpdateVariables(ErrVal, traits.NEAR, traits.RESET);
-            Debug.Assert(traits.IsNear(traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign)), x));
-            return traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign));
+            EncodeMappedValue(k, GetMappedErrVal(ctx.GetErrorCorrection(k | _traits.NEAR) ^ ErrVal), _traits.LIMIT);
+            ctx.UpdateVariables(ErrVal, _traits.NEAR, _traits.RESET);
+            Debug.Assert(_traits.IsNear((int)(object)_traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign)), x));
+            return _traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign));
         }
 
         protected override int DoRunMode(int index)
         {
-            const int ctypeRem = _width - index;
-            TPixel* ptypeCurX = _currentLine + index;
-            TPixel* ptypePrevX = _previousLine + index;
+            int ctypeRem = _width - index;
 
-            const TPixel Ra = ptypeCurX[-1];
+            TPixel Ra = _currentLine[index - 1];
 
             int runLength = 0;
 
-            while (traits.IsNear(ptypeCurX[runLength], Ra))
+            while (_traits.IsNear(_currentLine[index + runLength], Ra))
             {
-                ptypeCurX[runLength] = Ra;
+                _currentLine[index + runLength] = Ra;
                 runLength++;
 
                 if (runLength == ctypeRem)
@@ -139,7 +142,7 @@ namespace CharLS
             if (runLength == ctypeRem)
                 return runLength;
 
-            ptypeCurX[runLength] = EncodeRIPixel(ptypeCurX[runLength], Ra, ptypePrevX[runLength]);
+            _currentLine[index + runLength] = EncodeRIPixel(_currentLine[index + runLength], Ra, _previousLine[index + runLength]);
             DecrementRunIndex();
             return runLength + 1;
         }
@@ -149,7 +152,7 @@ namespace CharLS
         {
             int highbits = mappedError >> k;
 
-            if (highbits < limit - traits.qbpp - 1)
+            if (highbits < limit - _traits.qbpp - 1)
             {
                 if (highbits + 1 > 31)
                 {
@@ -161,16 +164,16 @@ namespace CharLS
                 return;
             }
 
-            if (limit - traits.qbpp > 31)
+            if (limit - _traits.qbpp > 31)
             {
                 AppendToBitStream(0, 31);
-                AppendToBitStream(1, limit - traits.qbpp - 31);
+                AppendToBitStream(1, limit - _traits.qbpp - 31);
             }
             else
             {
-                AppendToBitStream(1, limit - traits.qbpp);
+                AppendToBitStream(1, limit - _traits.qbpp);
             }
-            AppendToBitStream((mappedError - 1) & ((1 << traits.qbpp) - 1), traits.qbpp);
+            AppendToBitStream((mappedError - 1) & ((1 << _traits.qbpp) - 1), _traits.qbpp);
         }
 
         private void AppendToBitStream(int bits, int bitCount)
@@ -272,40 +275,48 @@ namespace CharLS
             int EMErrval = 2 * Math.Abs(Errval) - ctx._nRItype - (map ? 1 : 0);
 
             Debug.Assert(Errval == ctx.ComputeErrVal(EMErrval + ctx._nRItype, k));
-            EncodeMappedValue(k, EMErrval, traits.LIMIT - J[_RUNindex] - 1);
+            EncodeMappedValue(k, EMErrval, _traits.LIMIT - J[_RUNindex] - 1);
             ctx.UpdateVariables(Errval, EMErrval);
         }
 
-
-        private ITriplet<TSample> EncodeRIPixel(Triplet<TSample> x, Triplet<TSample> Ra, Triplet<TSample> Rb)
+        private TPixel EncodeRIPixel(TPixel x, TPixel Ra, TPixel Rb)
         {
-            int errval1 = traits.ComputeErrVal(Sign(Rb.v1 - Ra.v1) * (x.v1 - Rb.v1));
+            return
+                (TPixel)
+                (_isPixelTriplet
+                     ? EncodeRIPixel((ITriplet<TSample>)x, (ITriplet<TSample>)Ra, (ITriplet<TSample>)Rb)
+                     : (object)EncodeRIPixel((int)(object)x, (int)(object)Ra, (int)(object)Rb));
+        }
+
+        private ITriplet<TSample> EncodeRIPixel(ITriplet<TSample> x, ITriplet<TSample> Ra, ITriplet<TSample> Rb)
+        {
+            int errval1 = _traits.ComputeErrVal(Sign(Rb.v1 - Ra.v1) * (x.v1 - Rb.v1));
             EncodeRIError(_contextRunmode[0], errval1);
 
-            int errval2 = traits.ComputeErrVal(Sign(Rb.v2 - Ra.v2) * (x.v2 - Rb.v2));
+            int errval2 = _traits.ComputeErrVal(Sign(Rb.v2 - Ra.v2) * (x.v2 - Rb.v2));
             EncodeRIError(_contextRunmode[0], errval2);
 
-            int errval3 = traits.ComputeErrVal(Sign(Rb.v3 - Ra.v3) * (x.v3 - Rb.v3));
+            int errval3 = _traits.ComputeErrVal(Sign(Rb.v3 - Ra.v3) * (x.v3 - Rb.v3));
             EncodeRIError(_contextRunmode[0], errval3);
 
-            return new Triplet<TSample>(traits.ComputeReconstructedSample(Rb.v1, errval1 * Sign(Rb.v1 - Ra.v1)),
-                                   traits.ComputeReconstructedSample(Rb.v2, errval2 * Sign(Rb.v2 - Ra.v2)),
-                                   traits.ComputeReconstructedSample(Rb.v3, errval3 * Sign(Rb.v3 - Ra.v3)));
+            return new Triplet<TSample>(_traits.ComputeReconstructedSample(Rb.v1, errval1 * Sign(Rb.v1 - Ra.v1)),
+                                   _traits.ComputeReconstructedSample(Rb.v2, errval2 * Sign(Rb.v2 - Ra.v2)),
+                                   _traits.ComputeReconstructedSample(Rb.v3, errval3 * Sign(Rb.v3 - Ra.v3)));
         }
 
         private TSample EncodeRIPixel(int x, int Ra, int Rb)
         {
-            if (Math.Abs(Ra - Rb) <= traits.NEAR)
+            if (Math.Abs(Ra - Rb) <= _traits.NEAR)
             {
-                int ErrVal = traits.ComputeErrVal(x - Ra);
+                int ErrVal = _traits.ComputeErrVal(x - Ra);
                 EncodeRIError(_contextRunmode[1], ErrVal);
-                return traits.ComputeReconstructedSample(Ra, ErrVal);
+                return _traits.ComputeReconstructedSample(Ra, ErrVal);
             }
             else
             {
-                int ErrVal = traits.ComputeErrVal((x - Rb) * Sign(Rb - Ra));
+                int ErrVal = _traits.ComputeErrVal((x - Rb) * Sign(Rb - Ra));
                 EncodeRIError(_contextRunmode[0], ErrVal);
-                return traits.ComputeReconstructedSample(Rb, ErrVal * Sign(Rb - Ra));
+                return _traits.ComputeReconstructedSample(Rb, ErrVal * Sign(Rb - Ra));
             }
         }
 

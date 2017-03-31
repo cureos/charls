@@ -15,8 +15,8 @@ namespace CharLS
             MAXVAL = max;
             RANGE = (max + 2 * near) / (2 * near + 1) + 1;
             NEAR = near;
-            qbpp = log_2(RANGE);
-            bpp = log_2(max);
+            qbpp = Log2(RANGE);
+            bpp = Log2(max);
             LIMIT = 2 * (bpp + Math.Max(8, bpp));
             RESET = reset;
         }
@@ -32,7 +32,7 @@ namespace CharLS
             RESET = other.RESET;
         }
 
-        public TraitsBase(int bitsperpixel)
+        protected TraitsBase(int bitsperpixel)
         {
             NEAR = 0;
             bpp = bitsperpixel;
@@ -71,5 +71,16 @@ namespace CharLS
         /// Returns the value of errorValue modulo RANGE. ITU.T.87, A.4.5 (code segment A.9)
         /// </summary>
         public abstract int ModuloRange(int errorValue);
+
+        private static int Log2(int n)
+        {
+            var x = 0;
+            while (n > 1 << x)
+            {
+                ++x;
+            }
+
+            return x;
+        }
     }
 }
