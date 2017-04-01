@@ -13,14 +13,11 @@ namespace CharLS
 
         private readonly int _bytesPerLine;
 
-        private int _position;
-
         public PostProcesSingle(ByteStreamInfo rawData, JlsParameters parameters, int bytesPerPixel)
         {
             _rawData = rawData;
             _bytesPerPixel = bytesPerPixel;
             _bytesPerLine = parameters.stride;
-            _position = 0;
         }
 
         public void NewLineDecoded(byte[] source, int sourceStride, int pixelCount)

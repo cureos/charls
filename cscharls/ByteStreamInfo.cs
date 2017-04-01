@@ -19,8 +19,6 @@ namespace CharLS
     // 
     public class ByteStreamInfo
     {
-        private readonly bool _isStream;
-
         private readonly bool _canRead;
 
         private readonly bool _canWrite;
@@ -43,7 +41,7 @@ namespace CharLS
             _rawData = null;
             _arrayPosition = 0;
 
-            _isStream = true;
+            IsBuffered = false;
             _canRead = stream.CanRead;
             _canWrite = stream.CanWrite;
             _canSeek = stream.CanSeek;
@@ -57,7 +55,7 @@ namespace CharLS
             _rawData = bytes;
             _arrayPosition = 0;
 
-            _isStream = false;
+            IsBuffered = true;
             _canRead = true;
             _canWrite = true;
             _canSeek = true;
@@ -65,24 +63,26 @@ namespace CharLS
             _arrayLength = length > 0 ? Math.Min(length, bytes.Length) : bytes.Length;
         }
 
+        public bool IsBuffered { get; }
+
         public int Position
         {
             get
             {
                 if (!_canSeek) throw new InvalidOperationException();
-                return _isStream ? (int)_rawStream.Position : _arrayPosition;
+                return IsBuffered ? _arrayPosition : (int)_rawStream.Position;
             }
 
             set
             {
                 if (!_canSeek) throw new InvalidOperationException();
-                if (_isStream)
+                if (IsBuffered)
                 {
-                    _rawStream.Position = value;
+                    _arrayPosition = value;
                 }
                 else
                 {
-                    _arrayPosition = value;
+                    _rawStream.Position = value;
                 }
             }
         }
@@ -92,7 +92,7 @@ namespace CharLS
             get
             {
                 if (!_canSeek) throw new InvalidOperationException();
-                return _isStream ? (int)_rawStream.Length : _arrayLength;
+                return IsBuffered ? _arrayLength : (int)_rawStream.Length;
             }
         }
 
@@ -100,7 +100,11 @@ namespace CharLS
         {
             get
             {
-                if (_isStream)
+                if (IsBuffered)
+                {
+                    return _rawData[index];
+                }
+                else
                 {
                     if (!_canSeek || !_canRead) throw new InvalidOperationException();
 
@@ -112,15 +116,15 @@ namespace CharLS
                     if (value < 0) throw new EndOfStreamException();
                     return (byte)value;
                 }
-                else
-                {
-                    return _rawData[index];
-                }
             }
 
             set
             {
-                if (_isStream)
+                if (IsBuffered)
+                {
+                    _rawData[index] = value;
+                }
+                else
                 {
                     if (!_canSeek || !_canWrite) throw new InvalidOperationException();
 
@@ -128,10 +132,6 @@ namespace CharLS
                     _rawStream.Position = index;
                     _rawStream.WriteByte(value);
                     _rawStream.Position = currPos;
-                }
-                else
-                {
-                    _rawData[index] = value;
                 }
             }
         }
@@ -142,24 +142,23 @@ namespace CharLS
 
         public bool Require(bool read, int count)
         {
-            var isModeSupported = read ? _canRead : _canWrite;
-            if (_isStream) return isModeSupported;
-            return isModeSupported && _arrayPosition + count <= _arrayLength;
+            if (IsBuffered) return _arrayPosition + count <= _arrayLength;
+            return read ? _canRead : _canWrite;
         }
 
         public byte ReadByte()
         {
             if (!_canRead) throw new InvalidOperationException();
 
-            if (_isStream)
+            if (IsBuffered)
             {
-                var val = _rawStream.ReadByte();
-                if (val < 0) throw new EndOfStreamException();
-                return (byte)val;
-            }
-
             if (_arrayPosition + 1 >= _arrayLength) throw new EndOfStreamException();
             return _rawData[_arrayPosition++];
+            }
+
+            var val = _rawStream.ReadByte();
+            if (val < 0) throw new EndOfStreamException();
+            return (byte)val;
         }
 
         public int Read(byte[] bytes, int offset, int count)
@@ -170,33 +169,33 @@ namespace CharLS
                 throw new ArgumentOutOfRangeException(nameof(bytes), "Array too small for specified offset and count");
             }
 
-            if (_isStream)
+            if (IsBuffered)
             {
-                return _rawStream.Read(bytes, offset, count);
+                count = Math.Min(count, _arrayLength - _arrayPosition);
+                if (count > 0)
+                {
+                    Array.Copy(_rawData, _arrayPosition, bytes, offset, count);
+                    _arrayPosition += count;
+                }
+
+                return count;
             }
 
-            count = Math.Min(count, _arrayLength - _arrayPosition);
-            if (count > 0)
-            {
-                Array.Copy(_rawData, _arrayPosition, bytes, offset, count);
-                _arrayPosition += count;
-            }
-
-            return count;
+            return _rawStream.Read(bytes, offset, count);
         }
 
         public void WriteByte(byte value)
         {
             if (!_canWrite) throw new InvalidOperationException();
 
-            if (_isStream)
-            {
-                _rawStream.WriteByte(value);
-            }
-            else
+            if (IsBuffered)
             {
                 if (_arrayPosition + 1 >= _arrayLength) throw new EndOfStreamException();
                 _rawData[_arrayPosition++] = value;
+            }
+            else
+            {
+                _rawStream.WriteByte(value);
             }
         }
 
@@ -205,15 +204,15 @@ namespace CharLS
             if (!_canWrite) throw new InvalidOperationException();
             if (count < 0) count = bytes.Length;
 
-            if (_isStream)
-            {
-                _rawStream.Write(bytes, offset, count);
-            }
-            else
+            if (IsBuffered)
             {
                 if (_arrayPosition + count >= _arrayLength) throw new EndOfStreamException();
                 Array.Copy(bytes, offset, _rawData, _arrayPosition, count);
                 _arrayPosition += count;
+            }
+            else
+            {
+                _rawStream.Write(bytes, offset, count);
             }
         }
     }

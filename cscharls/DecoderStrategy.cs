@@ -23,7 +23,7 @@ namespace CharLS
 
         private byte[] _buffer;
 
-        private Stream _byteStream;
+        private ByteStreamInfo _byteStream;
 
         // decoding
         private int _readCache;
@@ -54,16 +54,11 @@ namespace CharLS
         {
             _processLine = processLine;
 
-            uint8_t* compressedBytes = const_cast<uint8_t*>(
-                static_cast <
-            const uint8_t* >
-            (compressedData.rawData))
-            ;
             _rect = rect;
 
             Init(compressedData);
             DoScan();
-            compressedData.Skip(GetCurBytePos() - compressedBytes);
+            compressedData.Skip(GetCurBytePos());
         }
 
         protected override void OnLineBegin(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride)
@@ -81,19 +76,22 @@ namespace CharLS
             _validBits = 0;
             _readCache = 0;
 
-            if (compressedStream.rawStream)
+            if (compressedStream.IsBuffered)
+            {
+                _byteStream = null;
+                _position = 0;
+                _endPosition = compressedStream.Length;
+
+                _buffer = new byte[_endPosition];
+                compressedStream.Read(_buffer, 0, _endPosition);
+            }
+            else
             {
                 _buffer = new byte[40000];
                 _position = 0;
                 _endPosition = _position;
-                _byteStream = compressedStream.rawStream;
+                _byteStream = compressedStream;
                 AddBytesFromStream();
-            }
-            else
-            {
-                _byteStream = nullptr;
-                _position = compressedStream.rawData;
-                _endPosition = _position + compressedStream.count;
             }
 
             _nextFFPosition = FindNextFF();
@@ -102,11 +100,11 @@ namespace CharLS
 
         protected override void EndScan()
         {
-            if (*_position != 0xFF)
+            if (_buffer[_position] != 0xFF)
             {
                 ReadBit();
 
-                if (*_position != 0xFF) throw new charls_error(ApiResult.TooMuchCompressedData);
+                if (_buffer[_position] != 0xFF) throw new charls_error(ApiResult.TooMuchCompressedData);
             }
 
             if (_readCache != 0) throw new charls_error(ApiResult.TooMuchCompressedData);
@@ -174,17 +172,14 @@ namespace CharLS
 
             if (count > 64) return;
 
-            for (int i = 0; i < count; ++i)
-            {
-                _buffer[i] = _position[i];
-            }
-            int offset = _buffer.data() - _position;
+            Array.Copy(_buffer, _position, _buffer, 0, count);
+            int offset = -_position;
 
             _position += offset;
             _endPosition += offset;
             _nextFFPosition += offset;
 
-            int readbytes = _byteStream->sgetn(reinterpret_cast<char*>(_endPosition), _buffer.size() - count);
+            int readbytes = _byteStream.Read(_buffer, _endPosition, _buffer.Length - count);
             _endPosition += readbytes;
         }
 
@@ -199,7 +194,12 @@ namespace CharLS
             // Easy & fast: if there is no 0xFF byte in sight, we can read without bitstuffing
             if (_position < _nextFFPosition - (sizeof(int) - 1))
             {
-                _readCache |= FromBigEndian.Read(sizeof(int), _position) >> _validBits;
+                byte[] bytes =
+                    {
+                        _buffer[_position], _buffer[_position + 1], _buffer[_position + 2],
+                        _buffer[_position + 3]
+                    };
+                _readCache |= (int)(FromBigEndian.Read(sizeof(int), bytes) >> _validBits);
                 int bytesToRead = (bufferbits - _validBits) >> 3;
                 _position += bytesToRead;
                 _validBits += bytesToRead * 8;
@@ -226,12 +226,12 @@ namespace CharLS
                     return;
                 }
 
-                int valnew = _position[0];
+                int valnew = _buffer[_position];
 
                 if (valnew == 0xFF)
                 {
                     // JPEG bitstream rule: no FF may be followed by 0x80 or higher
-                    if (_position == _endPosition - 1 || (_position[1] & 0x80) != 0)
+                    if (_position == _endPosition - 1 || (_buffer[_position + 1] & 0x80) != 0)
                     {
                         if (_validBits <= 0) throw new charls_error(ApiResult.InvalidCompressedData);
 
@@ -259,7 +259,7 @@ namespace CharLS
 
             while (positionNextFF < _endPosition)
             {
-                if (*positionNextFF == 0xFF) break;
+                if (_buffer[positionNextFF] == 0xFF) break;
 
                 positionNextFF++;
             }
@@ -270,13 +270,13 @@ namespace CharLS
         private int GetCurBytePos()
         {
             int validBits = _validBits;
-            int compressedBytes = _position;
+            int compressedBytes = _position - 1;
 
             for (;;)
             {
-                const int cbitLast = compressedBytes[-1] == 0xFF ? 7 : 8;
+                int cbitLast = _buffer[compressedBytes] == 0xFF ? 7 : 8;
 
-                if (validBits < cbitLast) return compressedBytes;
+                if (validBits < cbitLast) return compressedBytes + 1;
 
                 validBits -= cbitLast;
                 compressedBytes--;
