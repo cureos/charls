@@ -384,7 +384,7 @@ namespace CharLS
                 (TPixel)
                 (_isPixelTriplet
                      ? DecodeRIPixel((ITriplet<TSample>)Ra, (ITriplet<TSample>)Rb)
-                     : (object)DecodeRIPixel((int)(object)Ra, (int)(object)Rb));
+                     : (object)DecodeRIPixel(Convert.ToInt32(Ra), Convert.ToInt32(Rb)));
         }
 
         private ITriplet<TSample> DecodeRIPixel(ITriplet<TSample> Ra, ITriplet<TSample> Rb)

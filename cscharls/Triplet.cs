@@ -6,17 +6,14 @@ using System.Runtime.InteropServices;
 
 namespace CharLS
 {
-    [StructLayout(LayoutKind.Explicit)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct Triplet<TSample> : ITriplet<TSample>
         where TSample : struct
     {
-        [FieldOffset(0)]
         private readonly int _v1;
 
-        [FieldOffset(4)]
         private readonly int _v2;
 
-        [FieldOffset(8)]
         private readonly int _v3;
 
         public Triplet(int x1, int x2, int x3)
@@ -28,9 +25,9 @@ namespace CharLS
 
         public Triplet(TSample x1, TSample x2, TSample x3)
         {
-            _v1 = (int)(object)x1;
-            _v2 = (int)(object)x2;
-            _v3 = (int)(object)x3;
+            _v1 = Convert.ToInt32(x1);
+            _v2 = Convert.ToInt32(x2);
+            _v3 = Convert.ToInt32(x3);
         }
 
         public int v1 => _v1;

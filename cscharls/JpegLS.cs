@@ -65,9 +65,14 @@ namespace CharLS
 
                 return ResultAndErrorMessage(ApiResult.OK, ref errorMessage);
             }
+            catch (charls_error e)
+            {
+                return ResultAndErrorMessageFromException(e, out errorMessage);
+            }
             catch (Exception e)
             {
-                return ResultAndErrorMessageFromException(e, ref errorMessage);
+                errorMessage = e.Message;
+                return ApiResult.UnexpectedFailure;
             }
         }
 
@@ -91,9 +96,14 @@ namespace CharLS
 
                 return ResultAndErrorMessage(ApiResult.OK, ref errorMessage);
             }
+            catch (charls_error e)
+            {
+                return ResultAndErrorMessageFromException(e, out errorMessage);
+            }
             catch (Exception e)
             {
-                return ResultAndErrorMessageFromException(e, ref errorMessage);
+                errorMessage = e.Message;
+                return ApiResult.UnexpectedFailure;
             }
         }
 
@@ -112,10 +122,16 @@ namespace CharLS
 
                 return ResultAndErrorMessage(ApiResult.OK, ref errorMessage);
             }
+            catch (charls_error e)
+            {
+                parameters = null;
+                return ResultAndErrorMessageFromException(e, out errorMessage);
+            }
             catch (Exception e)
             {
                 parameters = null;
-                return ResultAndErrorMessageFromException(e, ref errorMessage);
+                errorMessage = e.Message;
+                return ApiResult.UnexpectedFailure;
             }
         }
 
@@ -183,16 +199,10 @@ namespace CharLS
         }
 
 
-        private static ApiResult ResultAndErrorMessageFromException(Exception e, ref string errorMessage)
+        private static ApiResult ResultAndErrorMessageFromException(charls_error e, out string errorMessage)
         {
-            var charlsError = e as charls_error;
-            if (charlsError != null)
-            {
-                errorMessage = charlsError.Message;
-                return charlsError.Code;
-            }
-
-            return ResultAndErrorMessage(ApiResult.UnexpectedFailure, ref errorMessage);
+            errorMessage = e.Message;
+            return e.Code;
         }
     }
 }

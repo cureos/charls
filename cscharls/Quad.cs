@@ -6,19 +6,15 @@ using System.Runtime.InteropServices;
 
 namespace CharLS
 {
-    [StructLayout(LayoutKind.Explicit)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct Quad<TSample> : ITriplet<TSample> where TSample : struct
     {
-        [FieldOffset(0)]
         private readonly int _v1;
 
-        [FieldOffset(4)]
         private readonly int _v2;
 
-        [FieldOffset(8)]
         private readonly int _v3;
 
-        [FieldOffset(12)]
         private readonly int _v4;
 
         public Quad(ITriplet<TSample> triplet, int alpha)

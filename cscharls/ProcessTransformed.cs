@@ -72,10 +72,10 @@ namespace CharLS
             for (var x = 0; x < cpixel; ++x)
             {
                 var pixel = transform.Transform(
-                    (int)(object)input[x],
-                    (int)(object)input[x + pixelStrideIn],
-                    (int)(object)input[x + 2 * pixelStrideIn],
-                    (int)(object)input[x + 3 * pixelStrideIn]);
+                    Convert.ToInt32(input[x]),
+                    Convert.ToInt32(input[x + pixelStrideIn]),
+                    Convert.ToInt32(input[x + 2 * pixelStrideIn]),
+                    Convert.ToInt32(input[x + 3 * pixelStrideIn]));
 
                 output[x] = (Quad<TSample>)pixel;
             }
@@ -168,9 +168,9 @@ namespace CharLS
             for (var x = 0; x < cpixel; ++x)
             {
                 var pixel = transform.Transform(
-                    (int)(object)input[x],
-                    (int)(object)input[x + pixelStrideIn],
-                    (int)(object)input[x + 2 * pixelStrideIn]);
+                    Convert.ToInt32(input[x]),
+                    Convert.ToInt32(input[x + pixelStrideIn]),
+                    Convert.ToInt32(input[x + 2 * pixelStrideIn]));
 
                 output[x] = (Triplet<TSample>)pixel;
             }

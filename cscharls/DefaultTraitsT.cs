@@ -52,7 +52,7 @@ namespace CharLS
                 return rhs_.IsNear(lhs_, NEAR);
             }
 
-            return IsNear((int)(object)lhs_, (int)(object)rhs_);
+            return IsNear(Convert.ToInt32(lhs_), Convert.ToInt32(rhs_));
         }
 
         public override int CorrectPrediction(int Pxc)

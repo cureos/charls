@@ -23,7 +23,7 @@ namespace CharLS
 
             for (var i = 0; i < 1 << (cbit - length); ++i)
             {
-                Debug.Assert(_rgtype[(bvalue << (cbit - length)) + i].GetLength() == 0);
+                //Debug.Assert(_rgtype[(bvalue << (cbit - length)) + i].GetLength() == 0);
                 _rgtype[(bvalue << (cbit - length)) + i] = c;
             }
         }

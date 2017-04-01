@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
+using System;
+
 using static CharLS.util;
 
 namespace CharLS
@@ -28,7 +30,7 @@ namespace CharLS
 
         public override bool IsNear(TPixel lhs, TPixel rhs)
         {
-            return IsNear((int)(object)lhs, (int)(object)rhs);
+            return IsNear(Convert.ToInt32(lhs), Convert.ToInt32(rhs));
         }
 
         public override int ModuloRange(int errorValue)

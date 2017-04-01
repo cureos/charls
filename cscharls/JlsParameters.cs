@@ -56,7 +56,7 @@ namespace CharLS
         /// </summary>
         public bool outputBgr { get; set; }
 
-        public JpegLSPresetCodingParameters custom { get; set; }
+        public JpegLSPresetCodingParameters custom { get; set; } = new JpegLSPresetCodingParameters();
 
         public JfifParameters jfif { get; set; }
     }

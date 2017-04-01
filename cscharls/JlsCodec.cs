@@ -379,15 +379,15 @@ namespace CharLS
         private void DoSingletLine()
         {
             int index = 0;
-            int Rb = (int)(object)_previousLine[index - 1];
-            int Rd = (int)(object)_previousLine[index];
+            int Rb = Convert.ToInt32(_previousLine[index - 1]);
+            int Rd = Convert.ToInt32(_previousLine[index]);
 
             while (index < _width)
             {
-                int Ra = (int)(object)_currentLine[index - 1];
+                int Ra = Convert.ToInt32(_currentLine[index - 1]);
                 int Rc = Rb;
                 Rb = Rd;
-                Rd = (int)(object)_previousLine[index + 1];
+                Rd = Convert.ToInt32(_previousLine[index + 1]);
 
                 int Qs = ComputeContextID(
                     QuantizeGratient(Rd - Rb),
@@ -397,14 +397,14 @@ namespace CharLS
                 if (Qs != 0)
                 {
                     _currentLine[index] =
-                        (TPixel)(object)DoRegular(Qs, (int)(object)_currentLine[index], GetPredictedValue(Ra, Rb, Rc));
+                        (TPixel)(object)DoRegular(Qs, Convert.ToInt32(_currentLine[index]), GetPredictedValue(Ra, Rb, Rc));
                     index++;
                 }
                 else
                 {
                     index += DoRunMode(index);
-                    Rb = (int)(object)_previousLine[index - 1];
-                    Rd = (int)(object)_previousLine[index];
+                    Rb = Convert.ToInt32(_previousLine[index - 1]);
+                    Rd = Convert.ToInt32(_previousLine[index]);
                 }
             }
         }
@@ -463,7 +463,7 @@ namespace CharLS
             int components = _params.interleaveMode == InterleaveMode.Line ? _params.components : 1;
 
             var vectmp = new TPixel[2 * components * pixelstride];
-            var rgRUNindex = new List<int>(components);
+            var rgRUNindex = new int[components];
 
             for (int line = 0; line < _params.height; ++line)
             {

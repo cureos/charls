@@ -18,6 +18,7 @@ namespace CharLS
         public JpegStreamReader(ByteStreamInfo byteStreamInfo)
         {
             _byteStream = byteStreamInfo;
+            _params = new JlsParameters();
         }
 
         public JlsParameters GetMetadata()

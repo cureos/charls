@@ -123,7 +123,7 @@ namespace CharLS
 
             EncodeMappedValue(k, GetMappedErrVal(ctx.GetErrorCorrection(k | _traits.NEAR) ^ ErrVal), _traits.LIMIT);
             ctx.UpdateVariables(ErrVal, _traits.NEAR, _traits.RESET);
-            Debug.Assert(_traits.IsNear((int)(object)_traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign)), x));
+            Debug.Assert(_traits.IsNear(Convert.ToInt32(_traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign))), x));
             return _traits.ComputeReconstructedSample(Px, ApplySign(ErrVal, sign));
         }
 
@@ -292,7 +292,7 @@ namespace CharLS
                 (TPixel)
                 (_isPixelTriplet
                      ? EncodeRIPixel((ITriplet<TSample>)x, (ITriplet<TSample>)Ra, (ITriplet<TSample>)Rb)
-                     : (object)EncodeRIPixel((int)(object)x, (int)(object)Ra, (int)(object)Rb));
+                     : (object)EncodeRIPixel(Convert.ToInt32(x), Convert.ToInt32(Ra), Convert.ToInt32(Rb)));
         }
 
         private ITriplet<TSample> EncodeRIPixel(ITriplet<TSample> x, ITriplet<TSample> Ra, ITriplet<TSample> Rb)
