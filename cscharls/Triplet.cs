@@ -10,37 +10,37 @@ namespace CharLS
     public struct Triplet<TSample> : ITriplet<TSample>
         where TSample : struct
     {
-        private readonly int _v1;
+        private readonly TSample _r;
 
-        private readonly int _v2;
+        private readonly TSample _g;
 
-        private readonly int _v3;
+        private readonly TSample _b;
 
         public Triplet(int x1, int x2, int x3)
         {
-            _v1 = x1;
-            _v2 = x2;
-            _v3 = x3;
+            _r = (TSample)Convert.ChangeType(x1, typeof(TSample));
+            _g = (TSample)Convert.ChangeType(x2, typeof(TSample));
+            _b = (TSample)Convert.ChangeType(x3, typeof(TSample));
         }
 
         public Triplet(TSample x1, TSample x2, TSample x3)
         {
-            _v1 = Convert.ToInt32(x1);
-            _v2 = Convert.ToInt32(x2);
-            _v3 = Convert.ToInt32(x3);
+            _r = x1;
+            _g = x2;
+            _b = x3;
         }
 
-        public int v1 => _v1;
+        public int v1 => Convert.ToInt32(_r);
 
-        public int v2 => _v2;
+        public int v2 => Convert.ToInt32(_g);
 
-        public int v3 => _v3;
+        public int v3 => Convert.ToInt32(_b);
 
-        public TSample R => (TSample)(object)v1;
+        public TSample R => _r;
 
-        public TSample G => (TSample)(object)v2;
+        public TSample G => _g;
 
-        public TSample B => (TSample)(object)v3;
+        public TSample B => _b;
 
         public static bool operator ==(Triplet<TSample> left, ITriplet<TSample> right)
         {

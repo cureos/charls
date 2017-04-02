@@ -9,37 +9,37 @@ namespace CharLS
     [StructLayout(LayoutKind.Sequential)]
     public struct Quad<TSample> : ITriplet<TSample> where TSample : struct
     {
-        private readonly int _v1;
+        private readonly TSample _r;
 
-        private readonly int _v2;
+        private readonly TSample _g;
 
-        private readonly int _v3;
+        private readonly TSample _b;
 
-        private readonly int _v4;
+        private readonly TSample _a;
 
         public Quad(ITriplet<TSample> triplet, int alpha)
         {
-            _v1 = triplet.v1;
-            _v2 = triplet.v2;
-            _v3 = triplet.v3;
-            _v4 = alpha;
+            _r = triplet.R;
+            _g = triplet.G;
+            _b = triplet.B;
+            _a = (TSample)Convert.ChangeType(alpha, typeof(TSample));
         }
 
-        public int v1 => _v1;
+        public int v1 => Convert.ToInt32(_r);
 
-        public int v2 => _v2;
+        public int v2 => Convert.ToInt32(_g);
 
-        public int v3 => _v3;
+        public int v3 => Convert.ToInt32(_b);
 
-        public int v4 => _v4;
+        public int v4 => Convert.ToInt32(_a);
 
-        public TSample R => (TSample)(object)v1;
+        public TSample R => _r;
 
-        public TSample G => (TSample)(object)v2;
+        public TSample G => _g;
 
-        public TSample B => (TSample)(object)v3;
+        public TSample B => _b;
 
-        public TSample A => (TSample)(object)v4;
+        public TSample A => _a;
 
         public static bool operator ==(Quad<TSample> left, ITriplet<TSample> right)
         {
