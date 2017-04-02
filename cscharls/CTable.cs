@@ -28,7 +28,7 @@ namespace CharLS
             }
         }
 
-        public Code Get(int value)
+        public Code Get(uint value)
         {
             return _rgtype[value];
         }

@@ -25,7 +25,7 @@ namespace CharLS
         private ByteStreamInfo _byteStream;
 
         // decoding
-        private int _readCache;
+        private uint _readCache;
 
         private int _validBits;
 
@@ -118,7 +118,7 @@ namespace CharLS
 
             int ErrVal;
             Code code = decodingTables[k].Get(PeekByte());
-            if (code.GetLength() != 0)
+            if (code != null && code.GetLength() != 0)
             {
                 Skip(code.GetLength());
                 ErrVal = code.GetValue();
@@ -191,14 +191,14 @@ namespace CharLS
         private bool OptimizedRead()
         {
             // Easy & fast: if there is no 0xFF byte in sight, we can read without bitstuffing
-            if (_position < _nextFFPosition - (sizeof(int) - 1))
+            if (_position < _nextFFPosition - (sizeof(uint) - 1))
             {
                 byte[] bytes =
                     {
                         _buffer[_position], _buffer[_position + 1], _buffer[_position + 2],
                         _buffer[_position + 3]
                     };
-                _readCache |= (int)(FromBigEndian.Read(sizeof(int), bytes) >> _validBits);
+                _readCache |= (uint)(FromBigEndian.Read(sizeof(uint), bytes) >> _validBits);
                 int bytesToRead = (bufferbits - _validBits) >> 3;
                 _position += bytesToRead;
                 _validBits += bytesToRead * 8;
@@ -225,7 +225,7 @@ namespace CharLS
                     return;
                 }
 
-                int valnew = _buffer[_position];
+                uint valnew = _buffer[_position];
 
                 if (valnew == 0xFF)
                 {
@@ -292,12 +292,12 @@ namespace CharLS
 
             Debug.Assert(length != 0 && length <= _validBits);
             Debug.Assert(length < 32);
-            int result = _readCache >> (bufferbits - length);
+            int result = (int)_readCache >> (bufferbits - length);
             Skip(length);
             return result;
         }
 
-        private int PeekByte()
+        private uint PeekByte()
         {
             if (_validBits < 8)
             {
@@ -314,7 +314,7 @@ namespace CharLS
                 MakeValid();
             }
 
-            bool bSet = (_readCache & (1 << (bufferbits - 1))) != 0;
+            bool bSet = (_readCache & ((uint)1 << (bufferbits - 1))) != 0;
             Skip(1);
             return bSet;
         }
@@ -325,11 +325,11 @@ namespace CharLS
             {
                 MakeValid();
             }
-            int valTest = _readCache;
+            var valTest = _readCache;
 
             for (int count = 0; count < 16; count++)
             {
-                if ((valTest & (1 << (bufferbits - 1))) != 0) return count;
+                if ((valTest & ((uint)1 << (bufferbits - 1))) != 0) return count;
 
                 valTest <<= 1;
             }
