@@ -16,7 +16,7 @@ namespace CharLS
 
     public sealed class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IDecoderStrategy where TSample : struct
     {
-        private const int bufferbits = sizeof(int) * 8;
+        private const int bufferbits = sizeof(uint) * 8;
 
         private IProcessLine _processLine;
 
