@@ -12,8 +12,8 @@ namespace cscharls_test
             try
             {
 
-                var bytes = File.ReadAllBytes("banny_normal.jls");
-                var compressed = new ByteStreamInfo(bytes);
+                var fromBytes = File.ReadAllBytes("banny_normal.jls");
+                var compressed = new ByteStreamInfo(fromBytes);
 
                 JlsParameters parameters;
                 string message = null;
@@ -22,8 +22,8 @@ namespace cscharls_test
 
                 Console.WriteLine($"{result}: {message}");
 
-                var stream = new MemoryStream();
-                var decoded = new ByteStreamInfo(stream);
+                var toBytes = new byte[parameters.stride * parameters.height];
+                var decoded = new ByteStreamInfo(toBytes);
                 result = JpegLS.DecodeStream(decoded, compressed, parameters, ref message);
 
                 Console.WriteLine($"{result}: {message}");
