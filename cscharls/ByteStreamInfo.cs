@@ -106,44 +106,6 @@ namespace CharLS
             }
         }
 
-        public byte this[int index]
-        {
-            get
-            {
-                if (IsBuffered)
-                {
-                    return _rawData[index];
-                }
-
-                if (!_canSeek || !_canRead) throw new InvalidOperationException();
-
-                var currPos = _rawStream.Position;
-                _rawStream.Position = index;
-                var value = _rawStream.ReadByte();
-                _rawStream.Position = currPos;
-
-                if (value < 0) throw new EndOfStreamException();
-                return (byte)value;
-            }
-
-            set
-            {
-                if (IsBuffered)
-                {
-                    _rawData[index] = value;
-                }
-                else
-                {
-                    if (!_canSeek || !_canWrite) throw new InvalidOperationException();
-
-                    var currPos = _rawStream.Position;
-                    _rawStream.Position = index;
-                    _rawStream.WriteByte(value);
-                    _rawStream.Position = currPos;
-                }
-            }
-        }
-
         public void Skip(int count)
         {
             Position += count;
@@ -161,8 +123,8 @@ namespace CharLS
 
             if (IsBuffered)
             {
-            if (_arrayPosition + 1 >= _arrayLength) throw new EndOfStreamException();
-            return _rawData[_arrayPosition++];
+                if (_arrayPosition + 1 >= _arrayLength) throw new EndOfStreamException();
+                return _rawData[_arrayPosition++];
             }
 
             var val = _rawStream.ReadByte();

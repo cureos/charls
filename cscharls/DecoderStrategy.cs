@@ -11,7 +11,6 @@ namespace CharLS
     public interface IDecoderStrategy : ICodecStrategy
     {
         void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData);
-
     }
 
     public sealed class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IDecoderStrategy where TSample : struct
