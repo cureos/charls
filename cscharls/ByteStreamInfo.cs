@@ -96,6 +96,16 @@ namespace CharLS
             }
         }
 
+        public byte[] Buffer
+        {
+            get
+            {
+                if (!IsBuffered) throw new InvalidOperationException();
+
+                return _rawData;
+            }
+        }
+
         public byte this[int index]
         {
             get
@@ -104,18 +114,16 @@ namespace CharLS
                 {
                     return _rawData[index];
                 }
-                else
-                {
-                    if (!_canSeek || !_canRead) throw new InvalidOperationException();
 
-                    var currPos = _rawStream.Position;
-                    _rawStream.Position = index;
-                    var value = _rawStream.ReadByte();
-                    _rawStream.Position = currPos;
+                if (!_canSeek || !_canRead) throw new InvalidOperationException();
 
-                    if (value < 0) throw new EndOfStreamException();
-                    return (byte)value;
-                }
+                var currPos = _rawStream.Position;
+                _rawStream.Position = index;
+                var value = _rawStream.ReadByte();
+                _rawStream.Position = currPos;
+
+                if (value < 0) throw new EndOfStreamException();
+                return (byte)value;
             }
 
             set
@@ -135,6 +143,7 @@ namespace CharLS
                 }
             }
         }
+
         public void Skip(int count)
         {
             Position += count;
@@ -199,14 +208,14 @@ namespace CharLS
             }
         }
 
-        public void Write(byte[] bytes, int offset = 0, int count = -1)
+        public ulong Write(byte[] bytes, int offset = 0, int count = -1)
         {
             if (!_canWrite) throw new InvalidOperationException();
             if (count < 0) count = bytes.Length;
 
             if (IsBuffered)
             {
-                if (_arrayPosition + count >= _arrayLength) throw new EndOfStreamException();
+                count = Math.Min(count, _arrayLength - _arrayPosition);
                 Array.Copy(bytes, offset, _rawData, _arrayPosition, count);
                 _arrayPosition += count;
             }
@@ -214,6 +223,8 @@ namespace CharLS
             {
                 _rawStream.Write(bytes, offset, count);
             }
+
+            return (ulong)count;
         }
     }
 }

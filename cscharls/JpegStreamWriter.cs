@@ -15,6 +15,8 @@ namespace CharLS
     {
         private ByteStreamInfo _data;
 
+        private ulong _byteOffset;
+
         private int _lastComponentIndex;
 
         private IList<IJpegSegment> _segments;
@@ -22,6 +24,7 @@ namespace CharLS
         public JpegStreamWriter()
         {
             _data = null;
+            _byteOffset = 0;
             _lastComponentIndex = 0;
             _segments = new List<IJpegSegment>();
         }
@@ -63,12 +66,12 @@ namespace CharLS
             AddSegment(JpegMarkerSegment.CreateColorTransformSegment(transformation));
         }
 
-        public int GetBytesWritten()
+        public ulong GetBytesWritten()
         {
-            return _data.Position;
+            return _byteOffset;
         }
 
-        public int Write(ByteStreamInfo info)
+        public ulong Write(ByteStreamInfo info)
         {
             _data = info;
 
@@ -81,7 +84,7 @@ namespace CharLS
 
             WriteMarker(JpegMarkerCode.EndOfImage);
 
-            return _data.Position;
+            return _byteOffset;
         }
 
         internal ByteStreamInfo OutputStream()
@@ -93,12 +96,15 @@ namespace CharLS
         {
             if (!_data.Require(false, 1)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
             _data.WriteByte(val);
+            _byteOffset++;
         }
 
         internal void WriteBytes(byte[] bytes)
         {
+            var length = bytes.Length;
             if (!_data.Require(false, bytes.Length)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
             _data.Write(bytes);
+            _byteOffset += (ulong)length;
         }
 
         internal void WriteWord(ushort value)
@@ -114,9 +120,9 @@ namespace CharLS
             WriteByte((byte)marker);
         }
 
-        internal void Seek(int byteCount)
+        internal void Seek(ulong byteCount)
         {
-            _data.Skip(byteCount);
+            _byteOffset += byteCount;
         }
 
         private static bool IsDefault(JpegLSPresetCodingParameters custom)

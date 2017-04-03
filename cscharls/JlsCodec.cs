@@ -498,7 +498,7 @@ namespace CharLS
                         _rect.Width,
                         new Subarray<TPixel>(
                             vectmp,
-                            _currentLine.Offset + _rect.X - (components * pixelstride),
+                            _currentLine.Offset + _rect.X - components * pixelstride,
                             pixelstride),
                         pixelstride);
                 }
@@ -517,7 +517,7 @@ namespace CharLS
             InitQuantizationLUT();
 
             int A = Math.Max(2, (_traits.RANGE + 32) / 64);
-            for (uint Q = 0; Q < ContextsCount; ++Q)
+            for (ulong Q = 0; Q < ContextsCount; ++Q)
             {
                 _contexts[Q] = new JlsContext(A);
             }

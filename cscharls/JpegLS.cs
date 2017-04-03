@@ -9,7 +9,7 @@ namespace CharLS
     {
         public static ApiResult EncodeStream(
             ByteStreamInfo compressedStreamInfo,
-            ref int pcbyteWritten,
+            ref ulong pcbyteWritten,
             ByteStreamInfo rawStreamInfo,
             JlsParameters parameters,
             ref string errorMessage)

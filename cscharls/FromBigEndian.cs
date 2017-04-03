@@ -7,16 +7,16 @@ namespace CharLS
 {
     public class FromBigEndian
     {
-        public static ulong Read(int size, byte[] pbyte)
+        public static ulong Read(int size, Subarray<byte> bytes)
         {
             switch (size)
             {
                 case 4:
-                    return (uint)((pbyte[0] << 24) + (pbyte[1] << 16) + (pbyte[2] << 8) + (pbyte[3] << 0));
+                    return (uint)((bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + (bytes[3] << 0));
                 case 8:
-                    return ((ulong)pbyte[0] << 56) + ((ulong)pbyte[1] << 48) + ((ulong)pbyte[2] << 40)
-                           + ((ulong)pbyte[3] << 32) + ((ulong)pbyte[4] << 24) + ((ulong)pbyte[5] << 16)
-                           + ((ulong)pbyte[6] << 8) + ((ulong)pbyte[7] << 0);
+                    return ((ulong)bytes[0] << 56) + ((ulong)bytes[1] << 48) + ((ulong)bytes[2] << 40)
+                           + ((ulong)bytes[3] << 32) + ((ulong)bytes[4] << 24) + ((ulong)bytes[5] << 16)
+                           + ((ulong)bytes[6] << 8) + ((ulong)bytes[7] << 0);
                 default:
                     throw new NotSupportedException($"Invalid type size: {size}");
             }

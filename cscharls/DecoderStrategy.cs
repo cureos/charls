@@ -16,7 +16,7 @@ namespace CharLS
 
     public sealed class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IDecoderStrategy where TSample : struct
     {
-        private const int bufferbits = sizeof(uint) * 8;
+        private const int bufferbits = sizeof(ulong) * 8;
 
         private IProcessLine _processLine;
 
@@ -25,7 +25,7 @@ namespace CharLS
         private ByteStreamInfo _byteStream;
 
         // decoding
-        private uint _readCache;
+        private ulong _readCache;
 
         private int _validBits;
 
@@ -78,16 +78,15 @@ namespace CharLS
             if (compressedStream.IsBuffered)
             {
                 _byteStream = null;
-                _position = 0;
+                _position = compressedStream.Position;
                 _endPosition = compressedStream.Length;
 
-                _buffer = new byte[_endPosition];
-                compressedStream.Read(_buffer, 0, _endPosition);
+                _buffer = compressedStream.Buffer;
             }
             else
             {
                 _buffer = new byte[40000];
-                _position = 0;
+                _position = compressedStream.Position;
                 _endPosition = _position;
                 _byteStream = compressedStream;
                 AddBytesFromStream();
@@ -191,14 +190,9 @@ namespace CharLS
         private bool OptimizedRead()
         {
             // Easy & fast: if there is no 0xFF byte in sight, we can read without bitstuffing
-            if (_position < _nextFFPosition - (sizeof(uint) - 1))
+            if (_position < _nextFFPosition - (sizeof(ulong) - 1))
             {
-                byte[] bytes =
-                    {
-                        _buffer[_position], _buffer[_position + 1], _buffer[_position + 2],
-                        _buffer[_position + 3]
-                    };
-                _readCache |= (uint)(FromBigEndian.Read(sizeof(uint), bytes) >> _validBits);
+                _readCache |= FromBigEndian.Read(sizeof(ulong), new Subarray<byte>(_buffer, _position, sizeof(ulong))) >> _validBits;
                 int bytesToRead = (bufferbits - _validBits) >> 3;
                 _position += bytesToRead;
                 _validBits += bytesToRead * 8;
@@ -225,7 +219,7 @@ namespace CharLS
                     return;
                 }
 
-                uint valnew = _buffer[_position];
+                ulong valnew = _buffer[_position];
 
                 if (valnew == 0xFF)
                 {
@@ -292,12 +286,12 @@ namespace CharLS
 
             Debug.Assert(length != 0 && length <= _validBits);
             Debug.Assert(length < 32);
-            int result = (int)_readCache >> (bufferbits - length);
+            var result = (int)(_readCache >> (bufferbits - length));
             Skip(length);
             return result;
         }
 
-        private uint PeekByte()
+        private ulong PeekByte()
         {
             if (_validBits < 8)
             {
@@ -314,7 +308,7 @@ namespace CharLS
                 MakeValid();
             }
 
-            bool bSet = (_readCache & ((uint)1 << (bufferbits - 1))) != 0;
+            bool bSet = (_readCache & ((ulong)1 << (bufferbits - 1))) != 0;
             Skip(1);
             return bSet;
         }
@@ -329,7 +323,7 @@ namespace CharLS
 
             for (int count = 0; count < 16; count++)
             {
-                if ((valTest & ((uint)1 << (bufferbits - 1))) != 0) return count;
+                if ((valTest & ((ulong)1 << (bufferbits - 1))) != 0) return count;
 
                 valTest <<= 1;
             }
