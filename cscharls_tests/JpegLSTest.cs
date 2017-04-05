@@ -2,7 +2,12 @@
 // Licensed under the BSD-3 license.
 
 using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+
 using Xunit;
 
 namespace CharLS
@@ -23,10 +28,12 @@ namespace CharLS
         [Fact]
         public void TestDecodeBitStreamWithUnsupportedEncoding()
         {
-            byte[] encodedData = { 0xFF, 0xD8, // Start Of Image (JPEG_SOI)
-                            0xFF, 0xC3, // Start Of Frame (lossless, huffman) (JPEG_SOF_3)
-                            0x00, 0x00  // Lenght of data of the marker
-                          };
+            byte[] encodedData =
+                {
+                    0xFF, 0xD8, // Start Of Image (JPEG_SOI)
+                    0xFF, 0xC3, // Start Of Frame (lossless, huffman) (JPEG_SOF_3)
+                    0x00, 0x00 // Lenght of data of the marker
+                };
             var output = new byte[1000];
             string message = null;
 
@@ -38,29 +45,17 @@ namespace CharLS
         public void TestDecodeBitStreamWithUnknownJpegMarker()
         {
             byte[] encodedData =
-            {
-                0xFF, 0xD8, // Start Of Image (JPEG_SOI)
-                0xFF, 0x01, // Undefined marker
-                0x00, 0x00 // Lenght of data of the marker
-            };
+                {
+                    0xFF, 0xD8, // Start Of Image (JPEG_SOI)
+                    0xFF, 0x01, // Undefined marker
+                    0x00, 0x00 // Lenght of data of the marker
+                };
             var output = new byte[1000];
             string message = null;
 
             var error = JpegLS.DecodeStream(output, encodedData, null, ref message);
             Assert.Equal(error, ApiResult.UnknownJpegMarker);
         }
-
-        [Fact]
-        public void TestDamagedBitStream1()
-        {
-            var rgbyteCompressed = File.ReadAllBytes("test/incorrect_images/InfiniteLoopFFMPEG.jls");
-            var rgbyteOut = new byte[256 * 256 * 2];
-            string message = null;
-
-            var error = JpegLS.DecodeStream(rgbyteOut, rgbyteCompressed, null, ref message);
-            Assert.Equal(error, ApiResult.InvalidCompressedData);
-        }
-
 
         [Fact]
         public void TestDamagedBitStream2()
@@ -89,6 +84,56 @@ namespace CharLS
 
             var error = JpegLS.DecodeStream(rgbyteOut, rgbyteCompressed, null, ref message);
             Assert.Equal(error, ApiResult.InvalidCompressedData);
+        }
+
+        [Fact]
+        public void SuccessfullyDecodeLena()
+        {
+            byte[] toBytes = null;
+            JlsParameters parameters = null;
+
+            try
+            {
+                var fromBytes = File.ReadAllBytes("test/lena8b.jls");
+                var compressed = new ByteStreamInfo(fromBytes);
+
+                string message = null;
+                var result = JpegLS.ReadHeaderStream(compressed, out parameters, ref message);
+                compressed.Position = 0;
+
+                Assert.Equal(ApiResult.OK, result);
+
+                toBytes = new byte[parameters.stride * parameters.height];
+                var decoded = new ByteStreamInfo(toBytes);
+                result = JpegLS.DecodeStream(decoded, compressed, parameters, ref message);
+
+                Assert.Equal(ApiResult.OK, result);
+            }
+            catch (Exception e)
+            {
+                Assert.Equal(null, e);
+            }
+            finally
+            {
+                var bitmap = new Bitmap(parameters.width, parameters.height, PixelFormat.Format8bppIndexed);
+
+                var data = bitmap.LockBits(
+                    new Rectangle(0, 0, parameters.width, parameters.height),
+                    ImageLockMode.ReadWrite,
+                    PixelFormat.Format8bppIndexed);
+                Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
+                bitmap.UnlockBits(data);
+
+                var palette = bitmap.Palette;
+                for (var i = 0; i < palette.Entries.Length; ++i) palette.Entries[i] = Color.FromArgb(i, i, i);
+                bitmap.Palette = palette;
+
+                bitmap.Save("lena8b.jpg");
+            }
+
+            Assert.Equal(8, parameters.bitsPerSample);
+            Assert.Equal(1, parameters.components);
+            Assert.Equal(InterleaveMode.None, parameters.interleaveMode);
         }
     }
 }
