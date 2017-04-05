@@ -106,6 +106,16 @@ namespace CharLS
             }
         }
 
+        public static implicit operator ByteStreamInfo(byte[] bytes)
+        {
+            return new ByteStreamInfo(bytes);
+        }
+
+        public static implicit operator ByteStreamInfo(Stream stream)
+        {
+            return new ByteStreamInfo(stream);
+        }
+
         public void Skip(int count)
         {
             Position += count;
@@ -123,7 +133,7 @@ namespace CharLS
 
             if (IsBuffered)
             {
-                if (_arrayPosition + 1 >= _arrayLength) throw new EndOfStreamException();
+                if (_arrayPosition >= _arrayLength) throw new EndOfStreamException();
                 return _rawData[_arrayPosition++];
             }
 
