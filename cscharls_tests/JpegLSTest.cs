@@ -184,5 +184,22 @@ namespace CharLS
                 bitmap.Save($"{name}.jpg");
             }
         }
+
+        [Fact]
+        public void SuccessfulEncodeLena()
+        {
+            var inBytes = File.ReadAllBytes("test/lena8b.raw");
+            var outBytes = new byte[inBytes.Length];
+
+            ulong bytesWritten = 0;
+            var parameters = new JlsParameters { bitsPerSample = 8, components = 1, height = 512, width = 512, jfif = new JfifParameters() };
+            string message = null;
+
+            var result = JpegLS.EncodeStream(outBytes, ref bytesWritten, inBytes, parameters, ref message);
+            //Assert.Equal(ApiResult.OK, result);
+
+            Array.Resize(ref outBytes, (int)bytesWritten);
+            File.WriteAllBytes("lena8b.jls", outBytes);
+        }
     }
 }

@@ -101,6 +101,12 @@
   <ItemGroup>
     <Folder Include="test\incorrect_images\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\test\lena8b.raw">
+      <Link>test\lena8b.raw</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
