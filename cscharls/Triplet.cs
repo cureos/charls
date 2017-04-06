@@ -18,9 +18,7 @@ namespace CharLS
 
         public Triplet(int x1, int x2, int x3)
         {
-            _r = (TSample)Convert.ChangeType(x1, typeof(TSample));
-            _g = (TSample)Convert.ChangeType(x2, typeof(TSample));
-            _b = (TSample)Convert.ChangeType(x3, typeof(TSample));
+            SetDelimited(x1, x2, x3, out _r, out _g, out _b);
         }
 
         public Triplet(TSample x1, TSample x2, TSample x3)
@@ -88,6 +86,22 @@ namespace CharLS
         {
             return Math.Abs(other.v1 - v1) <= tolerance && Math.Abs(other.v2 - v2) <= tolerance
                    && Math.Abs(other.v3 - v3) <= tolerance;
+        }
+
+        private static void SetDelimited(int x1, int x2, int x3, out TSample v1, out TSample v2, out TSample v3)
+        {
+            int min = int.MinValue, max = int.MaxValue;
+
+            var type = typeof(TSample);
+            if (type == typeof(byte))
+            {
+                min = byte.MinValue;
+                max = byte.MaxValue;
+            }
+
+            v1 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x1, min), max), typeof(TSample));
+            v2 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x2, min), max), typeof(TSample));
+            v3 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x3, min), max), typeof(TSample));
         }
     }
 }

@@ -134,7 +134,55 @@ namespace CharLS
 
                 bitmap.Save("lena8b.jpg");
             }
+        }
 
+        [Theory]
+        [InlineData("banny_normal")]
+        [InlineData("banny_HP1")]
+        [InlineData("banny_HP2")]
+        [InlineData("banny_HP3")]
+        public void SuccessfullyDecodeRGB(string name)
+        {
+            byte[] toBytes = null;
+            JlsParameters parameters = null;
+
+            try
+            {
+                var fromBytes = File.ReadAllBytes($"test/{name}.jls");
+                var compressed = new ByteStreamInfo(fromBytes);
+
+                string message = null;
+                var result = JpegLS.ReadHeaderStream(compressed, out parameters, ref message);
+                compressed.Position = 0;
+
+                Assert.Equal(ApiResult.OK, result);
+                Assert.Equal(8, parameters.bitsPerSample);
+                Assert.Equal(3, parameters.components);
+                Assert.Equal(InterleaveMode.Line, parameters.interleaveMode);
+
+                toBytes = new byte[parameters.stride * parameters.height];
+                var decoded = new ByteStreamInfo(toBytes);
+                parameters.interleaveMode = InterleaveMode.None;
+                result = JpegLS.DecodeStream(decoded, compressed, parameters, ref message);
+
+                Assert.Equal(ApiResult.OK, result);
+            }
+            catch (Exception e)
+            {
+                Assert.Equal(null, e);
+            }
+            finally
+            {
+                var bitmap = new Bitmap(parameters.width, parameters.height, PixelFormat.Format24bppRgb);
+                var data = bitmap.LockBits(
+                    new Rectangle(0, 0, parameters.width, parameters.height),
+                    ImageLockMode.ReadWrite,
+                    PixelFormat.Format24bppRgb);
+                Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
+                bitmap.UnlockBits(data);
+
+                bitmap.Save($"{name}.jpg");
+            }
         }
     }
 }

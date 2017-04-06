@@ -70,6 +70,22 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\test\jlsimage\banny_HP1.jls">
+      <Link>test\banny_HP1.jls</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\test\jlsimage\banny_HP2.jls">
+      <Link>test\banny_HP2.jls</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\test\jlsimage\banny_HP3.jls">
+      <Link>test\banny_HP3.jls</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\test\jlsimage\banny_normal.jls">
+      <Link>test\banny_normal.jls</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\test\lena8b.jls">
       <Link>test\lena8b.jls</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

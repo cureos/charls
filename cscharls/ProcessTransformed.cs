@@ -64,7 +64,7 @@ namespace CharLS
             const int SamplesPerPixel = 4;
 
             var input = new TSample[SamplesPerPixel * pixelStrideIn];
-            ptypeInput.CopyTo(input, inputOffset, 0, pixelStrideIn);
+            ptypeInput.CopyTo(input, inputOffset, 0, Math.Min(pixelStrideIn, ptypeInput.Length));
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
             var output = new Quad<TSample>[pixelStride];
@@ -160,7 +160,7 @@ namespace CharLS
             const int SamplesPerPixel = 3;
 
             var input = new TSample[SamplesPerPixel * pixelStrideIn];
-            ptypeInput.CopyTo(input, inputOffset, 0, pixelStrideIn);
+            ptypeInput.CopyTo(input, inputOffset, 0, Math.Min(pixelStrideIn, ptypeInput.Length));
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
             var output = new Triplet<TSample>[pixelStride];
