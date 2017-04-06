@@ -66,7 +66,7 @@ namespace CharLS
         protected override void OnLineBegin(int cpixel, Subarray<TPixel> ptypeBuffer, int pixelStride)
         {
             var bytes = new byte[cpixel * _sizeOfPixel];
-            _processLine.NewLineRequested(bytes, pixelStride, cpixel);
+            _processLine.NewLineRequested(bytes, cpixel, pixelStride);
             ptypeBuffer.FromBytes(bytes);
         }
 
@@ -129,14 +129,16 @@ namespace CharLS
         protected override int DoRunMode(int index)
         {
             int ctypeRem = _width - index;
+            var ptypeCurX = _currentLine.Copy(index);
+            var ptypePrevX = _previousLine.Copy(index);
 
-            TPixel Ra = _currentLine[index - 1];
+            TPixel Ra = ptypeCurX[-1];
 
             int runLength = 0;
 
-            while (_traits.IsNear(_currentLine[index + runLength], Ra))
+            while (_traits.IsNear(ptypeCurX[runLength], Ra))
             {
-                _currentLine[index + runLength] = Ra;
+                ptypeCurX[runLength] = Ra;
                 runLength++;
 
                 if (runLength == ctypeRem)
@@ -148,7 +150,7 @@ namespace CharLS
             if (runLength == ctypeRem)
                 return runLength;
 
-            _currentLine[index + runLength] = EncodeRIPixel(_currentLine[index + runLength], Ra, _previousLine[index + runLength]);
+            ptypeCurX[runLength] = EncodeRIPixel(ptypeCurX[runLength], Ra, ptypePrevX[runLength]);
             DecrementRunIndex();
             return runLength + 1;
         }
@@ -287,7 +289,7 @@ namespace CharLS
         {
             return
                 (TPixel)
-                (_isPixelTriplet
+                (_pixelIsTriplet
                      ? EncodeRIPixel((ITriplet<TSample>)x, (ITriplet<TSample>)Ra, (ITriplet<TSample>)Rb)
                      : (object)EncodeRIPixel(Convert.ToInt32(x), Convert.ToInt32(Ra), Convert.ToInt32(Rb)));
         }

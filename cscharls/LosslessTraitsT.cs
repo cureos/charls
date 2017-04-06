@@ -40,7 +40,7 @@ namespace CharLS
 
         public override TSample ComputeReconstructedSample(int Px, int ErrVal)
         {
-            return (TSample)(object)(MAXVAL & (Px + ErrVal));
+            return (TSample)Convert.ChangeType(MAXVAL & (Px + ErrVal), typeof(TSample));
         }
 
         public override int CorrectPrediction(int Pxc)
@@ -121,7 +121,7 @@ namespace CharLS
 
         public override TSample ComputeReconstructedSample(int Px, int ErrVal)
         {
-            return (TSample)(object)(Px + ErrVal);
+            return (TSample)Convert.ChangeType(Px + ErrVal, typeof(TSample));
         }
     }
 }

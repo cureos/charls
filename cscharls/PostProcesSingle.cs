@@ -18,12 +18,12 @@ namespace CharLS
             _bytesPerLine = parameters.stride;
         }
 
-        public void NewLineDecoded(byte[] source, int sourceStride, int pixelCount)
+        public void NewLineDecoded(byte[] source, int pixelCount, int sourceStride)
         {
             _rawData.Write(source, 0, pixelCount * _bytesPerPixel);
         }
 
-        public void NewLineRequested(byte[] dest, int destStride, int pixelCount)
+        public void NewLineRequested(byte[] dest, int pixelCount, int destStride)
         {
             var bytesToRead = pixelCount * _bytesPerPixel;
             var bytesRead = _rawData.Read(dest, 0, pixelCount * _bytesPerPixel);

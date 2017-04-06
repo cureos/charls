@@ -128,7 +128,7 @@ namespace CharLS
         // codec parameters
         protected readonly ITraits<TSample, TPixel> _traits;
 
-        protected readonly bool _isPixelTriplet;
+        protected readonly bool _pixelIsTriplet;
 
         protected JlsRect _rect;
 
@@ -152,12 +152,12 @@ namespace CharLS
         protected Subarray<TPixel> _currentLine; // current line ptr
 
         // quantization lookup table
-        private sbyte[] _pquant;
+        private Subarray<sbyte> _pquant;
 
         protected JlsCodec(ITraits<TSample, TPixel> inTraits, JlsParameters parameters)
         {
             _traits = inTraits;
-            _isPixelTriplet = Implements<TPixel, ITriplet<TSample>>();
+            _pixelIsTriplet = Implements<TPixel, ITriplet<TSample>>();
 
             _params = parameters;
             _rect = new JlsRect();
@@ -303,9 +303,8 @@ namespace CharLS
 
         private int QuantizeGratient(int Di)
         {
-            var RANGE = _pquant.Length / 2;
-            Debug.Assert(QuantizeGratientOrg(Di) == _pquant[Di + RANGE]);
-            return _pquant[Di + RANGE];
+            Debug.Assert(QuantizeGratientOrg(Di) == _pquant[Di]);
+            return _pquant[Di];
         }
 
         private void InitQuantizationLUT()
@@ -318,33 +317,33 @@ namespace CharLS
                 {
                     if (_traits.bpp == 8)
                     {
-                        _pquant = rgquant8Ll;
+                        _pquant = new Subarray<sbyte>(rgquant8Ll, rgquant8Ll.Length / 2);
                         return;
                     }
                     if (_traits.bpp == 10)
                     {
-                        _pquant = rgquant10Ll;
+                        _pquant = new Subarray<sbyte>(rgquant10Ll, rgquant10Ll.Length / 2);
                         return;
                     }
                     if (_traits.bpp == 12)
                     {
-                        _pquant = rgquant12Ll;
+                        _pquant = new Subarray<sbyte>(rgquant12Ll, rgquant12Ll.Length / 2);
                         return;
                     }
                     if (_traits.bpp == 16)
                     {
-                        _pquant = rgquant16Ll;
+                        _pquant = new Subarray<sbyte>(rgquant16Ll, rgquant16Ll.Length / 2);
                         return;
                     }
                 }
             }
 
             int RANGE = 1 << _traits.bpp;
-            _pquant = new sbyte[RANGE * 2];
+            _pquant = new Subarray<sbyte>(new sbyte[RANGE * 2], RANGE);
 
             for (int i = -RANGE; i < RANGE; ++i)
             {
-                _pquant[i + RANGE] = QuantizeGratientOrg(i);
+                _pquant[i] = QuantizeGratientOrg(i);
             }
         }
 
@@ -366,7 +365,7 @@ namespace CharLS
 
         private void DoLine()
         {
-            if (_isPixelTriplet)
+            if (_pixelIsTriplet)
             {
                 DoTripletLine();
             }
@@ -396,8 +395,10 @@ namespace CharLS
 
                 if (Qs != 0)
                 {
-                    _currentLine[index] =
-                        (TPixel)(object)DoRegular(Qs, Convert.ToInt32(_currentLine[index]), GetPredictedValue(Ra, Rb, Rc));
+                    _currentLine[index] = (TPixel)
+                        Convert.ChangeType(
+                            DoRegular(Qs, Convert.ToInt32(_currentLine[index]), GetPredictedValue(Ra, Rb, Rc)),
+                            typeof(TPixel));
                     index++;
                 }
                 else
@@ -467,14 +468,9 @@ namespace CharLS
 
             for (int line = 0; line < _params.height; ++line)
             {
-                _previousLine = new Subarray<TPixel>(vectmp, 1, pixelstride);
-                _currentLine = new Subarray<TPixel>(vectmp, 1 + components * pixelstride, pixelstride);
-                if ((line & 1) == 1)
-                {
-                    var tmp = _previousLine;
-                    _previousLine = _currentLine;
-                    _currentLine = tmp;
-                }
+                var even = (line & 1) != 1;
+                _previousLine = new Subarray<TPixel>(vectmp, even ? 1 : 1 + components * pixelstride, _width);
+                _currentLine = new Subarray<TPixel>(vectmp, even ? 1 + components * pixelstride : 1, _width);
 
                 OnLineBegin(_width, _currentLine, pixelstride);
 
@@ -496,10 +492,7 @@ namespace CharLS
                 {
                     OnLineEnd(
                         _rect.Width,
-                        new Subarray<TPixel>(
-                            vectmp,
-                            _currentLine.Offset + _rect.X - components * pixelstride,
-                            pixelstride),
+                        _currentLine.Copy(_rect.X - components * pixelstride),
                         pixelstride);
                 }
             }

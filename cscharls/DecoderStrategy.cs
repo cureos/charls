@@ -66,7 +66,7 @@ namespace CharLS
 
         protected override void OnLineEnd(int pixelCount, Subarray<TPixel> ptypeBuffer, int pixelStride)
         {
-            _processLine.NewLineDecoded(ptypeBuffer.ToBytes(), pixelStride, pixelCount);
+            _processLine.NewLineDecoded(ptypeBuffer.ToBytes(), pixelCount, pixelStride);
         }
 
         protected override void Init(ByteStreamInfo compressedStream)
@@ -141,7 +141,7 @@ namespace CharLS
         {
             TPixel Ra = _currentLine[startIndex - 1];
 
-            int runLength = DecodeRunPixels(Ra, _currentLine, _width - startIndex);
+            int runLength = DecodeRunPixels(Ra, _currentLine.Copy(startIndex), _width - startIndex);
             int endIndex = startIndex + runLength;
 
             if (endIndex == _width)
@@ -226,7 +226,6 @@ namespace CharLS
                     if (_position == _endPosition - 1 || (_buffer[_position + 1] & 0x80) != 0)
                     {
                         if (_validBits <= 0) throw new charls_error(ApiResult.InvalidCompressedData);
-
                         return;
                     }
                 }
@@ -375,7 +374,7 @@ namespace CharLS
         {
             return
                 (TPixel)
-                (_isPixelTriplet
+                (_pixelIsTriplet
                      ? DecodeRIPixel((ITriplet<TSample>)Ra, (ITriplet<TSample>)Rb)
                      : (object)DecodeRIPixel(Convert.ToInt32(Ra), Convert.ToInt32(Rb)));
         }

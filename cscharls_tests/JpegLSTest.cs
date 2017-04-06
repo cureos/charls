@@ -65,7 +65,8 @@ namespace CharLS
             string message = null;
 
             Array.Resize(ref rgbyteCompressed, 900);
-            Array.Resize(ref rgbyteCompressed, 40000); // TODO Fyll nya med 3:or
+            Array.Resize(ref rgbyteCompressed, 40000);
+            Array.Copy(Enumerable.Repeat(3, 40000 - 900).ToArray(), 0, rgbyteCompressed, 900, 40000 - 900);
 
             var error = JpegLS.DecodeStream(rgbyteOut, rgbyteCompressed, null, ref message);
             Assert.Equal(error, ApiResult.InvalidCompressedData);
@@ -102,6 +103,9 @@ namespace CharLS
                 compressed.Position = 0;
 
                 Assert.Equal(ApiResult.OK, result);
+                Assert.Equal(8, parameters.bitsPerSample);
+                Assert.Equal(1, parameters.components);
+                Assert.Equal(InterleaveMode.None, parameters.interleaveMode);
 
                 toBytes = new byte[parameters.stride * parameters.height];
                 var decoded = new ByteStreamInfo(toBytes);
@@ -117,6 +121,10 @@ namespace CharLS
             {
                 var bitmap = new Bitmap(parameters.width, parameters.height, PixelFormat.Format8bppIndexed);
 
+                var palette = bitmap.Palette;
+                for (var i = 0; i < palette.Entries.Length; ++i) palette.Entries[i] = Color.FromArgb(i, i, i);
+                bitmap.Palette = palette;
+
                 var data = bitmap.LockBits(
                     new Rectangle(0, 0, parameters.width, parameters.height),
                     ImageLockMode.ReadWrite,
@@ -124,16 +132,9 @@ namespace CharLS
                 Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
                 bitmap.UnlockBits(data);
 
-                var palette = bitmap.Palette;
-                for (var i = 0; i < palette.Entries.Length; ++i) palette.Entries[i] = Color.FromArgb(i, i, i);
-                bitmap.Palette = palette;
-
                 bitmap.Save("lena8b.jpg");
             }
 
-            Assert.Equal(8, parameters.bitsPerSample);
-            Assert.Equal(1, parameters.components);
-            Assert.Equal(InterleaveMode.None, parameters.interleaveMode);
         }
     }
 }

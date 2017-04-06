@@ -11,11 +11,11 @@ namespace CharLS
 
         private readonly T[] _array;
 
-        internal Subarray(T[] array, int offset, int count)
+        internal Subarray(T[] array, int offset, int count = -1)
         {
             _array = array;
             Offset = offset;
-            Count = count;
+            Count = count < 0 ? array.Length - offset : count;
         }
 
         internal Subarray(T[] array)
@@ -38,6 +38,11 @@ namespace CharLS
             {
                 _array[Offset + index] = value;
             }
+        }
+
+        public Subarray<T> Copy(int offset)
+        {
+            return new Subarray<T>(_array, Offset + offset, Count);
         }
 
         public byte[] ToBytes()

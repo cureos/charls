@@ -30,7 +30,7 @@ namespace CharLS
             _rawPixels = rawStream;
         }
 
-        public void NewLineDecoded(byte[] source, int sourceStride, int pixelCount)
+        public void NewLineDecoded(byte[] source, int pixelCount, int sourceStride)
         {
             var bytesToWrite = pixelCount * _params.components * _sizeofSample;
             if (bytesToWrite > _buffer.Length) throw new charls_error(ApiResult.UncompressedBufferTooSmall);
@@ -39,7 +39,7 @@ namespace CharLS
             _rawPixels.Write(_buffer, 0, bytesToWrite);
         }
 
-        public void NewLineRequested(byte[] dest, int destStride, int pixelCount)
+        public void NewLineRequested(byte[] dest, int pixelCount, int destStride)
         {
             var bytesToRead = pixelCount * _params.components * _sizeofSample;
             if (!_rawPixels.Require(true, bytesToRead))

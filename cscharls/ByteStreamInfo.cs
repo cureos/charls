@@ -171,7 +171,7 @@ namespace CharLS
 
             if (IsBuffered)
             {
-                if (_arrayPosition + 1 >= _arrayLength) throw new EndOfStreamException();
+                if (_arrayPosition >= _arrayLength) throw new EndOfStreamException();
                 _rawData[_arrayPosition++] = value;
             }
             else

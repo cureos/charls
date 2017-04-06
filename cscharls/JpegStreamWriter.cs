@@ -112,6 +112,7 @@ namespace CharLS
             if (!_data.Require(false, 2)) throw new charls_error(ApiResult.CompressedBufferTooSmall);
             _data.WriteByte((byte)(value / 0x100));
             _data.WriteByte((byte)(value % 0x100));
+            _byteOffset += 2;
         }
 
         internal void WriteMarker(JpegMarkerCode marker)

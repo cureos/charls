@@ -56,5 +56,19 @@ namespace CharLS
                 Assert.True(traits1.IsNear(i, 2) == traits2.IsNear(i, 2));
             }
         }
+
+        [Fact]
+        public void Create()
+        {
+            var traits = new DefaultTraitsT<byte, byte>((1 << 8) - 1, 0);
+
+            Assert.Equal(255, traits.MAXVAL);
+            Assert.Equal(256, traits.RANGE);
+            Assert.Equal(0, traits.NEAR);
+            Assert.Equal(8, traits.qbpp);
+            Assert.Equal(8, traits.bpp);
+            Assert.Equal(32, traits.LIMIT);
+            Assert.Equal(64, traits.RESET);
+        }
     }
 }

@@ -106,7 +106,7 @@ namespace CharLS
                 val = val - RANGE * (2 * NEAR + 1);
             }
 
-            return (TSample)(object)CorrectPrediction(val);
+            return (TSample)Convert.ChangeType(CorrectPrediction(val), typeof(TSample));
         }
     }
 }
