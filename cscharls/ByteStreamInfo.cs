@@ -33,7 +33,7 @@ namespace CharLS
 
         private readonly int _arrayLength;
 
-        public ByteStreamInfo(Stream stream)
+        internal ByteStreamInfo(Stream stream)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
@@ -47,7 +47,7 @@ namespace CharLS
             _canSeek = stream.CanSeek;
         }
 
-        public ByteStreamInfo(byte[] bytes, int length = -1)
+        internal ByteStreamInfo(byte[] bytes, int length = -1)
         {
             if (bytes == null) throw new ArgumentNullException(nameof(bytes));
 
