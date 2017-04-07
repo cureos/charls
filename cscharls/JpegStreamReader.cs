@@ -105,7 +105,7 @@ namespace CharLS
                 if (ReadByte() != 0xFF) throw new charls_error(ApiResult.MissingJpegMarkerStart);
                 if ((JpegMarkerCode)ReadByte() != JpegMarkerCode.StartOfScan) throw new charls_error(ApiResult.InvalidCompressedData); // TODO: throw more specific error code.
             }
-            int length = ReadWord(); // TODO: do something with 'length' or remove it.
+            ReadWord();
 
             int componentCount = ReadByte();
             if (componentCount != 1 && componentCount != _params.components) throw new charls_error(ApiResult.ParameterValueNotSupported);

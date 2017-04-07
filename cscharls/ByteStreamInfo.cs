@@ -87,15 +87,6 @@ namespace CharLS
             }
         }
 
-        public int Length
-        {
-            get
-            {
-                if (!_canSeek) throw new InvalidOperationException();
-                return IsBuffered ? _arrayLength : (int)_rawStream.Length;
-            }
-        }
-
         public byte[] Buffer
         {
             get

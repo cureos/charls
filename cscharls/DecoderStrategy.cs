@@ -77,17 +77,17 @@ namespace CharLS
             if (compressedStream.IsBuffered)
             {
                 _byteStream = null;
-                _position = compressedStream.Position;
-                _endPosition = compressedStream.Length;
-
                 _buffer = compressedStream.Buffer;
+                _position = compressedStream.Position;
+                _endPosition = _buffer.Length;
+
             }
             else
             {
                 _buffer = new byte[40000];
+                _byteStream = compressedStream;
                 _position = compressedStream.Position;
                 _endPosition = _position;
-                _byteStream = compressedStream;
                 AddBytesFromStream();
             }
 
