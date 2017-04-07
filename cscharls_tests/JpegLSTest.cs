@@ -186,7 +186,7 @@ namespace CharLS
         }
 
         [Fact]
-        public void SuccessfulEncodeLena()
+        public void SuccessfullyEncodeLena()
         {
             var inBytes = File.ReadAllBytes("test/lena8b.raw");
             var outBytes = new byte[inBytes.Length];
@@ -196,7 +196,7 @@ namespace CharLS
             string message = null;
 
             var result = JpegLS.EncodeStream(outBytes, ref bytesWritten, inBytes, parameters, ref message);
-            //Assert.Equal(ApiResult.OK, result);
+            Assert.Equal(ApiResult.OK, result);
 
             Array.Resize(ref outBytes, (int)bytesWritten);
             File.WriteAllBytes("lena8b.jls", outBytes);

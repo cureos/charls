@@ -83,8 +83,8 @@ namespace CharLS
             {
                 _compressedStream = null;
                 _buffer = compressedStream.Buffer;
-                _position = 0;
-                _compressedLength = (ulong)compressedStream.Length;
+                _position = compressedStream.Position;
+                _compressedLength = (ulong)(_buffer.Length - _position);
             }
             else
             {
@@ -288,10 +288,11 @@ namespace CharLS
         private TPixel EncodeRIPixel(TPixel x, TPixel Ra, TPixel Rb)
         {
             return
-                (TPixel)
-                (_pixelIsTriplet
-                     ? EncodeRIPixel((ITriplet<TSample>)x, (ITriplet<TSample>)Ra, (ITriplet<TSample>)Rb)
-                     : (object)EncodeRIPixel(Convert.ToInt32(x), Convert.ToInt32(Ra), Convert.ToInt32(Rb)));
+                (TPixel) Convert.ChangeType(
+                    _pixelIsTriplet
+                        ? EncodeRIPixel((ITriplet<TSample>) x, (ITriplet<TSample>) Ra, (ITriplet<TSample>) Rb)
+                        : (object) EncodeRIPixel(Convert.ToInt32(x), Convert.ToInt32(Ra), Convert.ToInt32(Rb)),
+                    typeof(TPixel));
         }
 
         private ITriplet<TSample> EncodeRIPixel(ITriplet<TSample> x, ITriplet<TSample> Ra, ITriplet<TSample> Rb)

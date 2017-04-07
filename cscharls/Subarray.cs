@@ -54,7 +54,7 @@ namespace CharLS
 
         public void FromBytes(byte[] bytes)
         {
-            bytes.CopyTo(_array, 0, Offset, Count);
+            bytes.CopyTo(_array, 0, Offset, bytes.Length);
         }
     }
 }
