@@ -20,12 +20,10 @@ namespace CharLS
 
             try
             {
-                var fromBytes = File.ReadAllBytes("test/lena8b.jls");
-                var compressed = new ByteStreamInfo(fromBytes);
+                var compressed = File.ReadAllBytes("test/lena8b.jls");
 
-                string message = null;
-                var result = JpegLS.ReadHeaderStream(compressed, out parameters, ref message);
-                compressed.Position = 0;
+                string message;
+                var result = JpegLs.ReadHeader(compressed, out parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
                 Assert.Equal(8, parameters.bitsPerSample);
@@ -33,8 +31,7 @@ namespace CharLS
                 Assert.Equal(InterleaveMode.None, parameters.interleaveMode);
 
                 toBytes = new byte[parameters.stride * parameters.height];
-                var decoded = new ByteStreamInfo(toBytes);
-                result = JpegLS.DecodeStream(decoded, compressed, parameters, ref message);
+                result = JpegLs.Decode(compressed, toBytes, parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
             }
@@ -73,12 +70,10 @@ namespace CharLS
 
             try
             {
-                var fromBytes = File.ReadAllBytes($"test/{name}.jls");
-                var compressed = new ByteStreamInfo(fromBytes);
+                var compressed = File.ReadAllBytes($"test/{name}.jls");
 
-                string message = null;
-                var result = JpegLS.ReadHeaderStream(compressed, out parameters, ref message);
-                compressed.Position = 0;
+                string message;
+                var result = JpegLs.ReadHeader(compressed, out parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
                 Assert.Equal(8, parameters.bitsPerSample);
@@ -86,9 +81,8 @@ namespace CharLS
                 Assert.Equal(InterleaveMode.Line, parameters.interleaveMode);
 
                 toBytes = new byte[parameters.stride * parameters.height];
-                var decoded = new ByteStreamInfo(toBytes);
                 parameters.interleaveMode = InterleaveMode.None;
-                result = JpegLS.DecodeStream(decoded, compressed, parameters, ref message);
+                result = JpegLs.Decode(compressed, toBytes, parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
             }
@@ -116,11 +110,11 @@ namespace CharLS
             var inBytes = File.ReadAllBytes("test/lena8b.raw");
             var outBytes = new byte[inBytes.Length];
 
-            ulong bytesWritten = 0;
+            ulong bytesWritten;
             var parameters = new JlsParameters { bitsPerSample = 8, components = 1, height = 512, width = 512 };
-            string message = null;
+            string message;
 
-            var result = JpegLS.EncodeStream(outBytes, ref bytesWritten, inBytes, parameters, ref message);
+            var result = JpegLs.Encode(inBytes, outBytes, parameters, out bytesWritten, out message);
             Assert.Equal(ApiResult.OK, result);
 
             Array.Resize(ref outBytes, (int)bytesWritten);

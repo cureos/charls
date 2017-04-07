@@ -2,17 +2,96 @@
 // Licensed under the BSD-3 license.
 
 using System;
+using System.IO;
 
 namespace CharLS
 {
-    public static class JpegLS
+    public static class JpegLs
     {
-        public static ApiResult EncodeStream(
-            ByteStreamInfo compressedStreamInfo,
-            ref ulong pcbyteWritten,
-            ByteStreamInfo rawStreamInfo,
-            JlsParameters parameters,
-            ref string errorMessage)
+        public static ApiResult Encode(byte[] source, byte[] destination, JlsParameters parameters,
+            out ulong bytesWritten, out string errorMessage)
+        {
+            if (source == null || destination == null || parameters == null)
+            {
+                bytesWritten = 0;
+                errorMessage = "source, destination and parameters must not be null";
+                return ApiResult.InvalidJlsParameters;
+            }
+
+            return EncodeStream(source, destination, parameters, out bytesWritten, out errorMessage);
+        }
+
+        public static ApiResult Encode(Stream source, Stream destination, JlsParameters parameters,
+            out ulong bytesWritten, out string errorMessage)
+        {
+            if (source == null || destination == null || parameters == null)
+            {
+                bytesWritten = 0;
+                errorMessage = "source, destination and parameters must not be null";
+                return ApiResult.InvalidJlsParameters;
+            }
+
+            return EncodeStream(source, destination, parameters, out bytesWritten, out errorMessage);
+        }
+
+        public static ApiResult Decode(byte[] source, byte[] destination, JlsParameters info, out string errorMessage)
+        {
+            return DecodeStream(source, destination, info, out errorMessage);
+        }
+
+        public static ApiResult Decode(Stream source, Stream destination, JlsParameters info, out string errorMessage)
+        {
+            return DecodeStream(source, destination, info, out errorMessage);
+        }
+
+        public static ApiResult DecodeRect(byte[] compressedData, byte[] uncompressedData, JlsRect roi,
+            JlsParameters info, out string errorMessage)
+        {
+            return DecodeRectStream(compressedData, uncompressedData, roi, info, out errorMessage);
+        }
+
+        public static ApiResult DecodeRect(Stream compressedData, Stream uncompressedData, JlsRect roi,
+            JlsParameters info, out string errorMessage)
+        {
+            return DecodeRectStream(compressedData, uncompressedData, roi, info, out errorMessage);
+        }
+
+        public static ApiResult ReadHeader(byte[] compressedData, out JlsParameters parameters, out string errorMessage)
+        {
+            return ReadHeaderStream(compressedData, out parameters, out errorMessage);
+        }
+
+        private static ApiResult DecodeStream(ByteStreamInfo compressedStream, ByteStreamInfo rawStream,
+            JlsParameters info, out string errorMessage)
+        {
+            try
+            {
+                var reader = new JpegStreamReader(compressedStream);
+
+                if (info != null)
+                {
+                    reader.SetInfo(info);
+                }
+
+                reader.Read(rawStream);
+
+                errorMessage = null;
+                return ApiResult.OK;
+            }
+            catch (charls_error e)
+            {
+                errorMessage = e.Message;
+                return e.Code;
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.Message;
+                return ApiResult.UnexpectedFailure;
+            }
+        }
+
+        private static ApiResult EncodeStream(ByteStreamInfo rawStreamInfo, ByteStreamInfo compressedStreamInfo,
+            JlsParameters parameters, out ulong pcbyteWritten, out string errorMessage)
         {
             try
             {
@@ -63,25 +142,25 @@ namespace CharLS
                 writer.Write(compressedStreamInfo);
                 pcbyteWritten = writer.GetBytesWritten();
 
-                return ResultAndErrorMessage(ApiResult.OK, ref errorMessage);
+                errorMessage = null;
+                return ApiResult.OK;
             }
             catch (charls_error e)
             {
-                return ResultAndErrorMessageFromException(e, out errorMessage);
+                pcbyteWritten = 0;
+                errorMessage = e.Message;
+                return e.Code;
             }
             catch (Exception e)
             {
+                pcbyteWritten = 0;
                 errorMessage = e.Message;
                 return ApiResult.UnexpectedFailure;
             }
         }
 
-
-        public static ApiResult DecodeStream(
-            ByteStreamInfo rawStream,
-            ByteStreamInfo compressedStream,
-            JlsParameters info,
-            ref string errorMessage)
+        private static ApiResult DecodeRectStream(ByteStreamInfo compressedStream, ByteStreamInfo rawStreamInfo, JlsRect roi,
+            JlsParameters info, out string errorMessage)
         {
             try
             {
@@ -92,13 +171,16 @@ namespace CharLS
                     reader.SetInfo(info);
                 }
 
-                reader.Read(rawStream);
+                reader.SetRect(roi);
+                reader.Read(rawStreamInfo);
 
-                return ResultAndErrorMessage(ApiResult.OK, ref errorMessage);
+                errorMessage = null;
+                return ApiResult.OK;
             }
             catch (charls_error e)
             {
-                return ResultAndErrorMessageFromException(e, out errorMessage);
+                errorMessage = e.Message;
+                return e.Code;
             }
             catch (Exception e)
             {
@@ -107,11 +189,8 @@ namespace CharLS
             }
         }
 
-
-        public static ApiResult ReadHeaderStream(
-            ByteStreamInfo rawStreamInfo,
-            out JlsParameters parameters,
-            ref string errorMessage)
+        private static ApiResult ReadHeaderStream(ByteStreamInfo rawStreamInfo, out JlsParameters parameters,
+            out string errorMessage)
         {
             try
             {
@@ -120,12 +199,14 @@ namespace CharLS
                 reader.ReadStartOfScan(true);
                 parameters = reader.GetMetadata();
 
-                return ResultAndErrorMessage(ApiResult.OK, ref errorMessage);
+                errorMessage = null;
+                return ApiResult.OK;
             }
             catch (charls_error e)
             {
                 parameters = null;
-                return ResultAndErrorMessageFromException(e, out errorMessage);
+                errorMessage = e.Message;
+                return e.Code;
             }
             catch (Exception e)
             {
@@ -185,24 +266,6 @@ namespace CharLS
                             "interleaveMode can only be set to None in combination with components = 1");
                     break;
             }
-        }
-
-
-        private static ApiResult ResultAndErrorMessage(ApiResult result, ref string errorMessage)
-        {
-            if (!string.IsNullOrEmpty(errorMessage))
-            {
-                errorMessage = string.Empty;
-            }
-
-            return result;
-        }
-
-
-        private static ApiResult ResultAndErrorMessageFromException(charls_error e, out string errorMessage)
-        {
-            errorMessage = e.Message;
-            return e.Code;
         }
     }
 }
