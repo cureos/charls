@@ -332,7 +332,7 @@ namespace CharLS
 
         private static string StringConvert(byte[] bytes)
         {
-            return string.Join("", bytes.Select(b => (char)b));
+            return new string(bytes.Select(b => (char)b).ToArray());
         }
     }
 }

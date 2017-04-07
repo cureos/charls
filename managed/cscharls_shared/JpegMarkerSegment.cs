@@ -95,8 +95,13 @@ namespace CharLS
                     throw new charls_error(
                         ApiResult.InvalidJlsParameters,
                         "jfif.Xthumbnail is > 0 but jfif.thumbnail == null_ptr");
-
+#if NET35
+                var thumbnail = new byte[3 * jfif.Xthumbnail * jfif.Ythumbnail];
+                Array.Copy(jfif.thumbnail, 0, thumbnail, 0, 3 * jfif.Xthumbnail * jfif.Ythumbnail);
+                content.AddRange(jfif.thumbnail);
+#else
                 content.AddRange(new ArraySegment<byte>(jfif.thumbnail, 0, 3 * jfif.Xthumbnail * jfif.Ythumbnail));
+#endif
             }
 
             return new JpegMarkerSegment(JpegMarkerCode.ApplicationData0, content);

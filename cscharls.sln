@@ -11,10 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cscharls_portable", "manage
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cscharls_tests", "managed\cscharls_tests\cscharls_tests.csproj", "{D4371310-BF3E-4699-8097-E981E2C2AC70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cscharls_unity", "managed\cscharls_unity\cscharls_unity.csproj", "{58F32A80-5D64-4133-A1EA-4978C41AF076}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		managed\cscharls_shared\cscharls_shared.projitems*{4274b818-743e-4e2f-b52e-0bf727f918ad}*SharedItemsImports = 4
 		managed\cscharls_shared\cscharls_shared.projitems*{4d48c923-1269-4312-949f-eed851bf98b0}*SharedItemsImports = 4
+		managed\cscharls_shared\cscharls_shared.projitems*{58f32a80-5d64-4133-a1ea-4978c41af076}*SharedItemsImports = 4
 		managed\cscharls_shared\cscharls_shared.projitems*{f27c6ca7-a371-4e27-8ad1-d4a701b56d74}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +37,10 @@ Global
 		{D4371310-BF3E-4699-8097-E981E2C2AC70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4371310-BF3E-4699-8097-E981E2C2AC70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4371310-BF3E-4699-8097-E981E2C2AC70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58F32A80-5D64-4133-A1EA-4978C41AF076}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58F32A80-5D64-4133-A1EA-4978C41AF076}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58F32A80-5D64-4133-A1EA-4978C41AF076}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58F32A80-5D64-4133-A1EA-4978C41AF076}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
