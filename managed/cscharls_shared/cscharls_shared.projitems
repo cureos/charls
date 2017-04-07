@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>f27c6ca7-a371-4e27-8ad1-d4a701b56d74</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>cscharls_shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ApiResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ByteArrayExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ByteStreamInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CContextRunMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)charls_error.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Code.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ColorTransformation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ColorTransformBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DecoderStrategy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DefaultTraitsT.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EncoderStrategy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FromBigEndian.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ICodecStrategy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IColorTransform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IJpegSegment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InterleaveMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IProcessLine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ITraits.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ITriplet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JfifParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JlsCodec.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JlsCodecFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JlsContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JlsParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JlsRect.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JpegImageDataSegment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JpegLs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JpegLSPresetCodingParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JpegMarkerCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JpegMarkerSegment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JpegStreamReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JpegStreamWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LosslessTraitsT.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PostProcesSingleComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PostProcesSingleStream.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProcessTransformed.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\SharedAssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Quad.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Subarray.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TraitsBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TransformHp1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TransformHp2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TransformHp3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TransformNone.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TransformShifted.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Triplet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)util.cs" />
+  </ItemGroup>
+</Project>
