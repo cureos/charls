@@ -66,7 +66,7 @@ namespace CharLS
 
             Array.Resize(ref rgbyteCompressed, 900);
             Array.Resize(ref rgbyteCompressed, 40000);
-            Array.Copy(Enumerable.Repeat(3, 40000 - 900).ToArray(), 0, rgbyteCompressed, 900, 40000 - 900);
+            Array.Copy(Enumerable.Repeat((byte)3, 40000 - 900).ToArray(), 0, rgbyteCompressed, 900, 40000 - 900);
 
             var error = JpegLS.DecodeStream(rgbyteOut, rgbyteCompressed, null, ref message);
             Assert.Equal(error, ApiResult.InvalidCompressedData);

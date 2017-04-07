@@ -3,7 +3,7 @@
 
 namespace CharLS
 {
-    public class PostProcesSingle : IProcessLine
+    public class PostProcesSingleStream : IProcessLine
     {
         private readonly ByteStreamInfo _rawData;
 
@@ -11,7 +11,7 @@ namespace CharLS
 
         private readonly int _bytesPerLine;
 
-        public PostProcesSingle(ByteStreamInfo rawData, JlsParameters parameters, int bytesPerPixel)
+        public PostProcesSingleStream(ByteStreamInfo rawData, JlsParameters parameters, int bytesPerPixel)
         {
             _rawData = rawData;
             _bytesPerPixel = bytesPerPixel;
@@ -20,28 +20,30 @@ namespace CharLS
 
         public void NewLineDecoded(byte[] source, int pixelCount, int sourceStride)
         {
-            _rawData.Write(source, 0, pixelCount * _bytesPerPixel);
+            var bytesToWrite = (ulong)(pixelCount * _bytesPerPixel);
+            var bytesWritten = _rawData.Write(source, 0, pixelCount * _bytesPerPixel);
+            if (bytesWritten != bytesToWrite)
+                throw new charls_error(ApiResult.UncompressedBufferTooSmall);
         }
 
         public void NewLineRequested(byte[] dest, int pixelCount, int destStride)
         {
             var bytesToRead = pixelCount * _bytesPerPixel;
-            var bytesRead = _rawData.Read(dest, 0, pixelCount * _bytesPerPixel);
+            var bytesRead = _rawData.Read(dest, 0, bytesToRead);
             if (bytesRead < bytesToRead) throw new charls_error(ApiResult.CompressedBufferTooSmall);
 
-            // TODO Are the remaining operations stream specific?
             if (_bytesPerPixel == 2)
             {
-                ByteSwap(dest, 0, bytesToRead);
+                ByteSwap(dest, bytesToRead);
             }
 
-            if (_bytesPerLine > bytesToRead)
+            if (_bytesPerLine - bytesToRead > 0)
             {
                 _rawData.Skip(_bytesPerLine - bytesToRead);
             }
         }
 
-        private static void ByteSwap(byte[] data, int offset, int count)
+        private static void ByteSwap(byte[] data, int count)
         {
             if ((count & 1) != 0)
             {
@@ -49,7 +51,7 @@ namespace CharLS
                 throw new charls_error(ApiResult.InvalidJlsParameters, message);
             }
 
-            for (var i = offset; i < offset + count; i += 2)
+            for (var i = 0; i < count; i += 2)
             {
                 var tmp = data[i];
                 data[i] = data[i + 1];

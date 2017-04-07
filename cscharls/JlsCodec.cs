@@ -176,7 +176,9 @@ namespace CharLS
         {
             if (!IsInterleaved())
             {
-                return new PostProcesSingle(info, _params, Marshal.SizeOf(default(TPixel)));
+                return info.IsBuffered
+                    ? new PostProcesSingleComponent(info.Buffer, _params, Marshal.SizeOf(default(TPixel)))
+                    : (IProcessLine) new PostProcesSingleStream(info, _params, Marshal.SizeOf(default(TPixel)));
             }
 
             if (_params.colorTransformation == ColorTransformation.None) return new ProcessTransformed<TSample>(info, _params, new TransformNone<TSample>());
@@ -469,8 +471,8 @@ namespace CharLS
             for (int line = 0; line < _params.height; ++line)
             {
                 var even = (line & 1) != 1;
-                _previousLine = new Subarray<TPixel>(vectmp, even ? 1 : 1 + components * pixelstride, _width);
-                _currentLine = new Subarray<TPixel>(vectmp, even ? 1 + components * pixelstride : 1, _width);
+                _previousLine = new Subarray<TPixel>(vectmp, even ? 1 : 1 + components * pixelstride, components * pixelstride);
+                _currentLine = new Subarray<TPixel>(vectmp, even ? 1 + components * pixelstride : 1, components * pixelstride);
 
                 OnLineBegin(_width, _currentLine, pixelstride);
 
