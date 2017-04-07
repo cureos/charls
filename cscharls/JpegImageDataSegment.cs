@@ -5,7 +5,7 @@ namespace CharLS
 {
     public class JpegImageDataSegment : IJpegSegment
     {
-        private int _componentCount;
+        private readonly int _componentCount;
 
         private readonly ByteStreamInfo _rawStreamInfo;
 

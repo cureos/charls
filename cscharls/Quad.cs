@@ -22,7 +22,7 @@ namespace CharLS
             _r = triplet.R;
             _g = triplet.G;
             _b = triplet.B;
-            _a = (TSample)Convert.ChangeType(alpha, typeof(TSample));
+            _a = ToDelimited(alpha);
         }
 
         public int v1 => Convert.ToInt32(_r);
@@ -87,6 +87,39 @@ namespace CharLS
         {
             return Math.Abs(other.v1 - v1) <= tolerance && Math.Abs(other.v2 - v2) <= tolerance
                    && Math.Abs(other.v3 - v3) <= tolerance;
+        }
+
+        private static TSample ToDelimited(int alpha)
+        {
+            int min = int.MinValue, max = int.MaxValue;
+
+            var type = typeof(TSample);
+            if (type == typeof(byte))
+            {
+                min = byte.MinValue;
+                max = byte.MaxValue;
+            }
+            else if (type == typeof(sbyte))
+            {
+                min = sbyte.MinValue;
+                max = sbyte.MaxValue;
+            }
+            else if (type == typeof(ushort))
+            {
+                min = ushort.MinValue;
+                max = ushort.MaxValue;
+            }
+            else if (type == typeof(short))
+            {
+                min = short.MinValue;
+                max = short.MaxValue;
+            }
+            else if (type == typeof(uint))
+            {
+                min = (int)uint.MinValue;
+            }
+
+            return (TSample)Convert.ChangeType(Math.Min(Math.Max(alpha, min), max), type);
         }
     }
 }

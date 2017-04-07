@@ -58,6 +58,6 @@ namespace CharLS
 
         public JpegLSPresetCodingParameters custom { get; set; } = new JpegLSPresetCodingParameters();
 
-        public JfifParameters jfif { get; set; }
+        public JfifParameters jfif { get; set; } = new JfifParameters();
     }
 }

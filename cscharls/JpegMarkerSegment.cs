@@ -14,7 +14,7 @@ namespace CharLS
 
         private readonly IList<byte> _content;
 
-        public JpegMarkerSegment(JpegMarkerCode markerCode, IList<byte> content)
+        private JpegMarkerSegment(JpegMarkerCode markerCode, IList<byte> content)
         {
             _markerCode = markerCode;
             _content = content;

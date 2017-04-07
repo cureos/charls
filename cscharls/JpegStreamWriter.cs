@@ -19,7 +19,7 @@ namespace CharLS
 
         private int _lastComponentIndex;
 
-        private IList<IJpegSegment> _segments;
+        private readonly IList<IJpegSegment> _segments;
 
         public JpegStreamWriter()
         {

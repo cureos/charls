@@ -2,7 +2,6 @@
 // Licensed under the BSD-3 license.
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace CharLS

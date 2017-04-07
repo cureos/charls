@@ -66,6 +66,7 @@
     <Compile Include="JpegLSTest.cs" />
     <Compile Include="JpegMarkerSegmentTest.cs" />
     <Compile Include="JpegStreamReaderTest.cs" />
+    <Compile Include="ManualTest.cs" />
     <Compile Include="TraitsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

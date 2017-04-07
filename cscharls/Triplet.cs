@@ -98,10 +98,29 @@ namespace CharLS
                 min = byte.MinValue;
                 max = byte.MaxValue;
             }
+            else if (type == typeof(sbyte))
+            {
+                min = sbyte.MinValue;
+                max = sbyte.MaxValue;
+            }
+            else if (type == typeof(ushort))
+            {
+                min = ushort.MinValue;
+                max = ushort.MaxValue;
+            }
+            else if (type == typeof(short))
+            {
+                min = short.MinValue;
+                max = short.MaxValue;
+            }
+            else if (type == typeof(uint))
+            {
+                min = (int)uint.MinValue;
+            }
 
-            v1 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x1, min), max), typeof(TSample));
-            v2 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x2, min), max), typeof(TSample));
-            v3 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x3, min), max), typeof(TSample));
+            v1 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x1, min), max), type);
+            v2 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x2, min), max), type);
+            v3 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x3, min), max), type);
         }
     }
 }
