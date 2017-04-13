@@ -72,7 +72,7 @@ namespace CharLS
 
         public ulong GetLength()
         {
-            return (ulong)_data.Position - _byteOffset;
+            return (_data?.Count ?? 0ul) - _byteOffset;
         }
 
         public ulong Write(ByteStreamInfo info)

@@ -45,6 +45,8 @@ namespace CharLS
             _canRead = stream.CanRead;
             _canWrite = stream.CanWrite;
             _canSeek = stream.CanSeek;
+
+            Count = 0;
         }
 
         internal ByteStreamInfo(byte[] bytes, int length = -1)
@@ -61,6 +63,7 @@ namespace CharLS
             _canSeek = true;
 
             _arrayLength = length > 0 ? Math.Min(length, bytes.Length) : bytes.Length;
+            Count = (ulong)_arrayLength;
         }
 
         public bool IsStream { get; }
@@ -87,15 +90,11 @@ namespace CharLS
             }
         }
 
-        public byte[] Buffer
-        {
-            get
-            {
-                if (IsStream) throw new InvalidOperationException();
+        public Stream Stream => _rawStream;
 
-                return _rawData;
-            }
-        }
+        public byte[] Data => _rawData;
+
+        public ulong Count { get; set; }
 
         public void Skip(int count)
         {

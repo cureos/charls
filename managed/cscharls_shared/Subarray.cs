@@ -40,19 +40,19 @@ namespace CharLS
             }
         }
 
-        public Subarray<T> Copy(int offset)
+        internal Subarray<T> Copy(int shift)
         {
-            return new Subarray<T>(_array, Offset + offset, Count);
+            return new Subarray<T>(_array, Offset + shift, Count);
         }
 
-        public byte[] ToBytes()
+        internal byte[] AsBytes()
         {
             var bytes = new byte[Count * _typeSize];
             ByteArray.Copy(_array, Offset, Count, bytes, 0);
             return bytes;
         }
 
-        public void FromBytes(byte[] bytes)
+        internal void Fill(byte[] bytes)
         {
             ByteArray.Copy(bytes, 0, _array, Offset, bytes.Length / _typeSize);
         }
