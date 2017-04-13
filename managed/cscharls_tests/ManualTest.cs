@@ -12,6 +12,11 @@ namespace CharLS
 {
     public class ManualTest
     {
+        public ManualTest()
+        {
+            if (!Directory.Exists("out")) Directory.CreateDirectory("out");
+        }
+
         [Fact]
         public void SuccessfullyDecodeLena()
         {
@@ -54,7 +59,7 @@ namespace CharLS
                 Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
                 bitmap.UnlockBits(data);
 
-                bitmap.Save("lena8b.jpg");
+                bitmap.Save("out/lena8b.jpg");
             }
         }
 
@@ -69,14 +74,14 @@ namespace CharLS
                 var compressed = File.OpenRead("test/lena8b.jls");
 
                 string message;
-                /*var result = JpegLs.ReadHeader(compressed, out parameters, out message);
+                var result = JpegLs.ReadHeader(compressed, out parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
                 Assert.Equal(8, parameters.bitsPerSample);
                 Assert.Equal(1, parameters.components);
-                Assert.Equal(InterleaveMode.None, parameters.interleaveMode);*/
+                Assert.Equal(InterleaveMode.None, parameters.interleaveMode);
 
-                var result = JpegLs.Decode(compressed, toStream, parameters, out message);
+                result = JpegLs.Decode(compressed, toStream, parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
             }
@@ -100,7 +105,7 @@ namespace CharLS
                 Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
                 bitmap.UnlockBits(data);
 
-                bitmap.Save("lena8b_s.jpg");
+                bitmap.Save("out/lena8b_s.jpg");
             }
         }
 
@@ -146,25 +151,35 @@ namespace CharLS
                 Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
                 bitmap.UnlockBits(data);
 
-                bitmap.Save($"{name}.jpg");
+                bitmap.Save($"out/{name}.jpg");
             }
         }
 
-        [Fact]
-        public void SuccessfullyEncodeLena()
+        [Theory]
+        [InlineData("0015", 8, 1, 1024, 1024)]
+        [InlineData("alphatest", 8, 4, 380, 287)]
+        [InlineData("DSC_5455", 16, 3, 300, 200)]
+        [InlineData("lena8b", 8, 1, 512, 512)]
+        public void SuccessfullyEncodeRaw(string name, int bitsPerSample, int components, int height, int width)
         {
-            var inBytes = File.ReadAllBytes("test/lena8b.raw");
+            var inBytes = File.ReadAllBytes($"test/{name}.raw");
             var outBytes = new byte[inBytes.Length];
 
             ulong bytesWritten;
-            var parameters = new JlsParameters { bitsPerSample = 8, components = 1, height = 512, width = 512 };
             string message;
+            var parameters = new JlsParameters
+            {
+                bitsPerSample = bitsPerSample,
+                components = components,
+                height = height,
+                width = width
+            };
 
             var result = JpegLs.Encode(inBytes, outBytes, parameters, out bytesWritten, out message);
             Assert.Equal(ApiResult.OK, result);
 
             Array.Resize(ref outBytes, (int)bytesWritten);
-            File.WriteAllBytes("lena8b.jls", outBytes);
+            File.WriteAllBytes($"out/{name}.jls", outBytes);
         }
     }
 }
