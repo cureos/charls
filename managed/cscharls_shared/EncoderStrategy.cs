@@ -79,19 +79,19 @@ namespace CharLS
             _freeBitCount = sizeof(uint) * 8;
             _bitBuffer = 0;
 
-            if (compressedStream.IsBuffered)
-            {
-                _compressedStream = null;
-                _buffer = compressedStream.Buffer;
-                _position = compressedStream.Position;
-                _compressedLength = (ulong)(_buffer.Length - _position);
-            }
-            else
+            if (compressedStream.IsStream)
             {
                 _compressedStream = compressedStream;
                 _buffer = new byte[4000];
                 _position = 0;
                 _compressedLength = (ulong)_buffer.Length;
+            }
+            else
+            {
+                _compressedStream = null;
+                _buffer = compressedStream.Buffer;
+                _position = compressedStream.Position;
+                _compressedLength = (ulong)(_buffer.Length - _position);
             }
         }
 

@@ -176,9 +176,9 @@ namespace CharLS
         {
             if (!IsInterleaved())
             {
-                return info.IsBuffered
-                    ? new PostProcesSingleComponent(info.Buffer, _params, Marshal.SizeOf(default(TPixel)))
-                    : (IProcessLine) new PostProcesSingleStream(info, _params, Marshal.SizeOf(default(TPixel)));
+                return info.IsStream
+                    ? new PostProcesSingleStream(info, _params, Marshal.SizeOf(default(TPixel)))
+                    : (IProcessLine)new PostProcesSingleComponent(info.Buffer, _params, Marshal.SizeOf(default(TPixel)));
             }
 
             if (_params.colorTransformation == ColorTransformation.None) return new ProcessTransformed<TSample>(info, _params, new TransformNone<TSample>());

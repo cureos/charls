@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
-using System;
 using System.Collections.Generic;
 
 using static CharLS.util;

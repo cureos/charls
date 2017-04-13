@@ -74,21 +74,20 @@ namespace CharLS
             _validBits = 0;
             _readCache = 0;
 
-            if (compressedStream.IsBuffered)
-            {
-                _byteStream = null;
-                _buffer = compressedStream.Buffer;
-                _position = compressedStream.Position;
-                _endPosition = _buffer.Length;
-
-            }
-            else
+            if (compressedStream.IsStream)
             {
                 _buffer = new byte[40000];
                 _byteStream = compressedStream;
                 _position = compressedStream.Position;
                 _endPosition = _position;
                 AddBytesFromStream();
+            }
+            else
+            {
+                _byteStream = null;
+                _buffer = compressedStream.Buffer;
+                _position = compressedStream.Position;
+                _endPosition = _buffer.Length;
             }
 
             _nextFFPosition = FindNextFF();
