@@ -58,6 +58,52 @@ namespace CharLS
             }
         }
 
+        [Fact]
+        public void SuccessfullyDecodeLenaStream()
+        {
+            var toStream = new MemoryStream();
+            JlsParameters parameters = new JlsParameters();
+
+            try
+            {
+                var compressed = File.OpenRead("test/lena8b.jls");
+
+                string message;
+                /*var result = JpegLs.ReadHeader(compressed, out parameters, out message);
+
+                Assert.Equal(ApiResult.OK, result);
+                Assert.Equal(8, parameters.bitsPerSample);
+                Assert.Equal(1, parameters.components);
+                Assert.Equal(InterleaveMode.None, parameters.interleaveMode);*/
+
+                var result = JpegLs.Decode(compressed, toStream, parameters, out message);
+
+                Assert.Equal(ApiResult.OK, result);
+            }
+            catch (Exception e)
+            {
+                Assert.Equal(null, e);
+            }
+            finally
+            {
+                var toBytes = toStream.ToArray();
+                var bitmap = new Bitmap(parameters.width, parameters.height, PixelFormat.Format8bppIndexed);
+
+                var palette = bitmap.Palette;
+                for (var i = 0; i < palette.Entries.Length; ++i) palette.Entries[i] = Color.FromArgb(i, i, i);
+                bitmap.Palette = palette;
+
+                var data = bitmap.LockBits(
+                    new Rectangle(0, 0, parameters.width, parameters.height),
+                    ImageLockMode.ReadWrite,
+                    PixelFormat.Format8bppIndexed);
+                Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
+                bitmap.UnlockBits(data);
+
+                bitmap.Save("lena8b_s.jpg");
+            }
+        }
+
         [Theory]
         [InlineData("banny_normal")]
         [InlineData("banny_HP1")]

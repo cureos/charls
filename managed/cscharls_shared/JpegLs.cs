@@ -65,6 +65,11 @@ namespace CharLS
             return ReadHeaderStream(new ByteStreamInfo(compressedData), out parameters, out errorMessage);
         }
 
+        public static ApiResult ReadHeader(Stream compressedData, out JlsParameters parameters, out string errorMessage)
+        {
+            return ReadHeaderStream(new ByteStreamInfo(compressedData), out parameters, out errorMessage);
+        }
+
         private static ApiResult DecodeStream(ByteStreamInfo compressedStream, ByteStreamInfo rawStream,
             JlsParameters info, out string errorMessage)
         {
