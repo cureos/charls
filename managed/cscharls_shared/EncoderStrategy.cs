@@ -334,7 +334,7 @@ namespace CharLS
             while (runLength >= 1 << J[_RUNindex])
             {
                 AppendOnesToBitStream(1);
-                runLength = runLength - 1 << J[_RUNindex];
+                runLength -= 1 << J[_RUNindex];
                 IncrementRunIndex();
             }
 
