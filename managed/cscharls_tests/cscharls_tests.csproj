@@ -63,12 +63,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DecoderStrategyTest.cs" />
+    <Compile Include="EncoderStrategyTest.cs" />
+    <Compile Include="EncoderStrategyTester.cs" />
     <Compile Include="JpegLSTest.cs" />
     <Compile Include="JpegMarkerSegmentTest.cs" />
     <Compile Include="JpegStreamReaderTest.cs" />
+    <Compile Include="JpegStreamWriterTest.cs" />
     <Compile Include="ManualTest.cs" />
     <Compile Include="TraitsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\test\jlsimage\banny_HP1.jls">

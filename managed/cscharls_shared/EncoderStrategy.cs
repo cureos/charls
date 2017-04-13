@@ -14,7 +14,7 @@ namespace CharLS
         ulong EncodeScan(IProcessLine processLine, ByteStreamInfo compressedData);
     }
 
-    public sealed class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IEncoderStrategy where TSample : struct
+    public class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IEncoderStrategy where TSample : struct
     {
         private readonly int _sizeOfPixel = Marshal.SizeOf(default(TPixel));
 
@@ -53,7 +53,7 @@ namespace CharLS
         }
 
         // Setup codec for encoding and calls DoScan
-        public ulong EncodeScan(IProcessLine processLine, ByteStreamInfo compressedData)
+        public virtual ulong EncodeScan(IProcessLine processLine, ByteStreamInfo compressedData)
         {
             _processLine = processLine;
 
@@ -184,7 +184,7 @@ namespace CharLS
             AppendToBitStream((mappedError - 1) & ((1 << _traits.qbpp) - 1), _traits.qbpp);
         }
 
-        private void AppendToBitStream(int bits, int bitCount)
+        protected void AppendToBitStream(int bits, int bitCount)
         {
             Debug.Assert(bitCount < 32 && bitCount >= 0);
             Debug.Assert(
@@ -230,7 +230,7 @@ namespace CharLS
             _compressedLength = (ulong)_buffer.Length;
         }
 
-        private void Flush()
+        protected void Flush()
         {
             if (_compressedLength < 4)
             {
@@ -262,7 +262,7 @@ namespace CharLS
             }
         }
 
-        private ulong GetLength()
+        protected ulong GetLength()
         {
             return _bytesWritten - (ulong)(_freeBitCount - 32) / 8;
         }

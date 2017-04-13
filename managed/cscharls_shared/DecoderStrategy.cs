@@ -13,7 +13,7 @@ namespace CharLS
         void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData);
     }
 
-    public sealed class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IDecoderStrategy where TSample : struct
+    public class DecoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IDecoderStrategy where TSample : struct
     {
         private const int bufferbits = sizeof(ulong) * 8;
 
@@ -48,7 +48,7 @@ namespace CharLS
         }
 
         // Setup codec for decoding and calls DoScan
-        public void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData)
+        public virtual void DecodeScan(IProcessLine processLine, JlsRect rect, ByteStreamInfo compressedData)
         {
             _processLine = processLine;
 

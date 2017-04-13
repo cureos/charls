@@ -172,7 +172,7 @@ namespace CharLS
         }
 
         // Factory function for ProcessLine objects to copy/transform unencoded pixels to/from our scanline buffers.
-        public IProcessLine CreateProcess(ByteStreamInfo info)
+        public virtual IProcessLine CreateProcess(ByteStreamInfo info)
         {
             if (!IsInterleaved())
             {
@@ -228,7 +228,7 @@ namespace CharLS
             throw new charls_error(ApiResult.UnsupportedBitDepthForTransform);
         }
 
-        public void SetPresets(JpegLSPresetCodingParameters presets)
+        public virtual void SetPresets(JpegLSPresetCodingParameters presets)
         {
             JpegLSPresetCodingParameters presetDefault = ComputeDefault(_traits.MAXVAL, _traits.NEAR);
 
@@ -256,6 +256,16 @@ namespace CharLS
         protected int ApplySign(int i, int sign)
         {
             return (sign ^ i) - sign;
+        }
+
+        protected void IncrementRunIndex()
+        {
+            _RUNindex = Math.Min(31, _RUNindex + 1);
+        }
+
+        protected void DecrementRunIndex()
+        {
+            _RUNindex = Math.Max(0, _RUNindex - 1);
         }
 
         private static int GetPredictedValue(int Ra, int Rb, int Rc)
@@ -289,16 +299,6 @@ namespace CharLS
             if (_params.components == 1) return false;
 
             return true;
-        }
-
-        protected void IncrementRunIndex()
-        {
-            _RUNindex = Math.Min(31, _RUNindex + 1);
-        }
-
-        protected void DecrementRunIndex()
-        {
-            _RUNindex = Math.Max(0, _RUNindex - 1);
         }
 
         // Sets up a lookup table to "Quantize" sample difference.
