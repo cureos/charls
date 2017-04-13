@@ -18,7 +18,8 @@ namespace CharLS
                 return ApiResult.InvalidJlsParameters;
             }
 
-            return EncodeStream(source, destination, parameters, out bytesWritten, out errorMessage);
+            return EncodeStream(new ByteStreamInfo(source), new ByteStreamInfo(destination), parameters,
+                out bytesWritten, out errorMessage);
         }
 
         public static ApiResult Encode(Stream source, Stream destination, JlsParameters parameters,
@@ -31,34 +32,37 @@ namespace CharLS
                 return ApiResult.InvalidJlsParameters;
             }
 
-            return EncodeStream(source, destination, parameters, out bytesWritten, out errorMessage);
+            return EncodeStream(new ByteStreamInfo(source), new ByteStreamInfo(destination), parameters,
+                out bytesWritten, out errorMessage);
         }
 
         public static ApiResult Decode(byte[] source, byte[] destination, JlsParameters info, out string errorMessage)
         {
-            return DecodeStream(source, destination, info, out errorMessage);
+            return DecodeStream(new ByteStreamInfo(source), new ByteStreamInfo(destination), info, out errorMessage);
         }
 
         public static ApiResult Decode(Stream source, Stream destination, JlsParameters info, out string errorMessage)
         {
-            return DecodeStream(source, destination, info, out errorMessage);
+            return DecodeStream(new ByteStreamInfo(source), new ByteStreamInfo(destination), info, out errorMessage);
         }
 
         public static ApiResult DecodeRect(byte[] compressedData, byte[] uncompressedData, JlsRect roi,
             JlsParameters info, out string errorMessage)
         {
-            return DecodeRectStream(compressedData, uncompressedData, roi, info, out errorMessage);
+            return DecodeRectStream(new ByteStreamInfo(compressedData), new ByteStreamInfo(uncompressedData), roi, info,
+                out errorMessage);
         }
 
         public static ApiResult DecodeRect(Stream compressedData, Stream uncompressedData, JlsRect roi,
             JlsParameters info, out string errorMessage)
         {
-            return DecodeRectStream(compressedData, uncompressedData, roi, info, out errorMessage);
+            return DecodeRectStream(new ByteStreamInfo(compressedData), new ByteStreamInfo(uncompressedData), roi, info,
+                out errorMessage);
         }
 
         public static ApiResult ReadHeader(byte[] compressedData, out JlsParameters parameters, out string errorMessage)
         {
-            return ReadHeaderStream(compressedData, out parameters, out errorMessage);
+            return ReadHeaderStream(new ByteStreamInfo(compressedData), out parameters, out errorMessage);
         }
 
         private static ApiResult DecodeStream(ByteStreamInfo compressedStream, ByteStreamInfo rawStream,
@@ -159,7 +163,8 @@ namespace CharLS
             }
         }
 
-        private static ApiResult DecodeRectStream(ByteStreamInfo compressedStream, ByteStreamInfo rawStreamInfo, JlsRect roi,
+        private static ApiResult DecodeRectStream(ByteStreamInfo compressedStream, ByteStreamInfo rawStreamInfo,
+            JlsRect roi,
             JlsParameters info, out string errorMessage)
         {
             try
@@ -223,11 +228,15 @@ namespace CharLS
                     ApiResult.InvalidJlsParameters,
                     "rawStream or rawData needs to reference to something");
 
-            if (parameters.width < 1 || parameters.width > 65535) throw new charls_error(ApiResult.InvalidJlsParameters, "width needs to be in the range [1, 65535]");
+            if (parameters.width < 1 || parameters.width > 65535)
+                throw new charls_error(ApiResult.InvalidJlsParameters, "width needs to be in the range [1, 65535]");
 
-            if (parameters.height < 1 || parameters.height > 65535) throw new charls_error(ApiResult.InvalidJlsParameters, "height needs to be in the range [1, 65535]");
+            if (parameters.height < 1 || parameters.height > 65535)
+                throw new charls_error(ApiResult.InvalidJlsParameters, "height needs to be in the range [1, 65535]");
 
-            if (parameters.bitsPerSample < 2 || parameters.bitsPerSample > 16) throw new charls_error(ApiResult.InvalidJlsParameters, "bitspersample needs to be in the range [2, 16]");
+            if (parameters.bitsPerSample < 2 || parameters.bitsPerSample > 16)
+                throw new charls_error(ApiResult.InvalidJlsParameters,
+                    "bitspersample needs to be in the range [2, 16]");
 
             if (
                 !(parameters.interleaveMode == InterleaveMode.None || parameters.interleaveMode == InterleaveMode.Sample
@@ -236,7 +245,8 @@ namespace CharLS
                     ApiResult.InvalidJlsParameters,
                     "interleaveMode needs to be set to a value of {None, Sample, Line}");
 
-            if (parameters.components < 1 || parameters.components > 255) throw new charls_error(ApiResult.InvalidJlsParameters, "components needs to be in the range [1, 255]");
+            if (parameters.components < 1 || parameters.components > 255)
+                throw new charls_error(ApiResult.InvalidJlsParameters, "components needs to be in the range [1, 255]");
 
             if (
                 !uncompressedStream.Require(

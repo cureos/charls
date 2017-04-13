@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ApiResult.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ByteArrayExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ByteArray.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ByteStreamInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CContextRunMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)charls_error.cs" />

@@ -48,13 +48,13 @@ namespace CharLS
         public byte[] ToBytes()
         {
             var bytes = new byte[Count * _typeSize];
-            _array.CopyTo(bytes, Offset, Count, 0);
+            ByteArray.Copy(_array, Offset, Count, bytes, 0);
             return bytes;
         }
 
         public void FromBytes(byte[] bytes)
         {
-            bytes.CopyTo(_array, 0, Offset, bytes.Length);
+            ByteArray.Copy(bytes, 0, _array, Offset, bytes.Length / _typeSize);
         }
     }
 }

@@ -465,7 +465,7 @@ namespace CharLS
             int pixelstride = _width + 4;
             int components = _params.interleaveMode == InterleaveMode.Line ? _params.components : 1;
 
-            var vectmp = new TPixel[2 * components * pixelstride];
+            var vectmp = new TPixel[2 * components * pixelstride + 1];
             var rgRUNindex = new int[components];
 
             for (int line = 0; line < _params.height; ++line)

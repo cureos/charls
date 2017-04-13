@@ -61,10 +61,10 @@ namespace CharLS
             int pixelStride,
             IColorTransform<TSample> transform)
         {
-            const int SamplesPerPixel = 4;
+            const int samplesPerPixel = 4;
 
-            var input = new TSample[SamplesPerPixel * pixelStrideIn];
-            ptypeInput.CopyTo(input, inputOffset, 0, ptypeInput.Length);
+            var input = new TSample[samplesPerPixel * pixelStrideIn];
+            ByteArray.Copy(ptypeInput, inputOffset, input, 0, samplesPerPixel * pixelStrideIn);
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
             var output = new Quad<TSample>[pixelStride];
@@ -77,10 +77,10 @@ namespace CharLS
                     Convert.ToInt32(input[x + 2 * pixelStrideIn]),
                     Convert.ToInt32(input[x + 3 * pixelStrideIn]));
 
-                output[x] = (Quad<TSample>)pixel;
+                output[x] = (Quad<TSample>) pixel;
             }
 
-            output.CopyTo(ptypeBuffer, 0, pixelStride, 0);
+            ByteArray.Copy(output, 0, pixelStride, ptypeBuffer, 0);
         }
 
         private static void TransformQuadToLine(
@@ -91,18 +91,18 @@ namespace CharLS
             int pixelStride,
             IColorTransform<TSample> transform)
         {
-            const int SamplesPerPixel = 4;
+            const int samplesPerPixel = 4;
 
             var input = new Quad<TSample>[pixelStrideIn];
-            ptypeBufferIn.CopyTo(input, 0, 0, pixelStrideIn);
+            ByteArray.Copy(ptypeBufferIn, 0, input, 0, pixelStrideIn);
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
-            var output = new TSample[SamplesPerPixel * pixelStride];
+            var output = new TSample[samplesPerPixel * pixelStride];
 
             for (var x = 0; x < cpixel; ++x)
             {
                 var color = input[x];
-                var colorTranformed = (Quad<TSample>)transform.Transform(color.v1, color.v2, color.v3, color.v4);
+                var colorTranformed = (Quad<TSample>) transform.Transform(color.v1, color.v2, color.v3, color.v4);
 
                 output[x] = colorTranformed.R;
                 output[x + pixelStride] = colorTranformed.G;
@@ -110,14 +110,14 @@ namespace CharLS
                 output[x + 3 * pixelStride] = colorTranformed.A;
             }
 
-            output.CopyTo(ptypeBuffer, 0, SamplesPerPixel * pixelStride, bufferOffset);
+            ByteArray.Copy(output, 0, samplesPerPixel * pixelStride, ptypeBuffer, bufferOffset);
         }
 
         private static void TransformRgbToBgr(byte[] pDest, int samplesPerPixel, int pixelCount)
         {
             var length = samplesPerPixel * pixelCount;
             var dest = new TSample[length];
-            pDest.CopyTo(dest, 0, 0, length);
+            ByteArray.Copy(pDest, 0, dest, 0, length);
 
             for (var i = 0; i < length; i += samplesPerPixel)
             {
@@ -126,7 +126,7 @@ namespace CharLS
                 dest[i + 2] = tmp;
             }
 
-            dest.CopyTo(pDest, 0, length, 0);
+            ByteArray.Copy(dest, 0, length, pDest, 0);
         }
 
         private static void TransformLine(
@@ -138,15 +138,15 @@ namespace CharLS
             IColorTransform<TSample> transform)
         {
             var src = new Triplet<TSample>[pixelCount];
-            pSrc.CopyTo(src, srcOffset, 0, pixelCount);
+            ByteArray.Copy(pSrc, srcOffset, src, 0, pixelCount);
 
             var dest = new Triplet<TSample>[pixelCount];
             for (var i = 0; i < pixelCount; ++i)
             {
-                dest[i] = (Triplet<TSample>)transform.Transform(src[i].v1, src[i].v2, src[i].v3);
+                dest[i] = (Triplet<TSample>) transform.Transform(src[i].v1, src[i].v2, src[i].v3);
             }
 
-            dest.CopyTo(pDest, 0, pixelCount, destOffset);
+            ByteArray.Copy(dest, 0, pixelCount, pDest, destOffset);
         }
 
         private static void TransformLineToTriplet(
@@ -157,10 +157,10 @@ namespace CharLS
             int pixelStride,
             IColorTransform<TSample> transform)
         {
-            const int SamplesPerPixel = 3;
+            const int samplesPerPixel = 3;
 
-            var input = new TSample[SamplesPerPixel * pixelStrideIn];
-            ptypeInput.CopyTo(input, inputOffset, 0, ptypeInput.Length);
+            var input = new TSample[samplesPerPixel * pixelStrideIn];
+            ByteArray.Copy(ptypeInput, inputOffset, input, 0, samplesPerPixel * pixelStrideIn);
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
             var output = new Triplet<TSample>[pixelStride];
@@ -172,10 +172,10 @@ namespace CharLS
                     Convert.ToInt32(input[x + pixelStrideIn]),
                     Convert.ToInt32(input[x + 2 * pixelStrideIn]));
 
-                output[x] = (Triplet<TSample>)pixel;
+                output[x] = (Triplet<TSample>) pixel;
             }
 
-            output.CopyTo(ptypeBuffer, 0, pixelStride, 0);
+            ByteArray.Copy(output, 0, pixelStride, ptypeBuffer, 0);
         }
 
         private static void TransformTripletToLine(
@@ -186,25 +186,25 @@ namespace CharLS
             int pixelStride,
             IColorTransform<TSample> transform)
         {
-            const int SamplesPerPixel = 3;
+            const int samplesPerPixel = 3;
 
             var input = new Triplet<TSample>[pixelStrideIn];
-            ptypeBufferIn.CopyTo(input, 0, 0, pixelStrideIn);
+            ByteArray.Copy(ptypeBufferIn, 0, input, 0, pixelStrideIn);
 
             var cpixel = Math.Min(pixelStride, pixelStrideIn);
-            var output = new TSample[SamplesPerPixel * pixelStride];
+            var output = new TSample[samplesPerPixel * pixelStride];
 
             for (var x = 0; x < cpixel; ++x)
             {
                 var color = input[x];
-                var colorTranformed = (Triplet<TSample>)transform.Transform(color.v1, color.v2, color.v3);
+                var colorTranformed = (Triplet<TSample>) transform.Transform(color.v1, color.v2, color.v3);
 
                 output[x] = colorTranformed.R;
                 output[x + pixelStride] = colorTranformed.G;
                 output[x + 2 * pixelStride] = colorTranformed.B;
             }
 
-            output.CopyTo(ptypeBuffer, 0, SamplesPerPixel * pixelStride, bufferOffset);
+            ByteArray.Copy(output, 0, samplesPerPixel * pixelStride, ptypeBuffer, bufferOffset);
         }
 
         private void Transform(byte[] source, byte[] dest, int destOffset, int destStride, int pixelCount)
