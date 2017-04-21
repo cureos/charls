@@ -14,7 +14,7 @@ namespace CharLS
 
         internal static bool Implements<T, TBase>()
         {
-#if NET35
+#if NET20
             return typeof(TBase).IsAssignableFrom(typeof(T));
 #else
             return typeof(TBase).GetTypeInfo().IsAssignableFrom(typeof(T).GetTypeInfo());

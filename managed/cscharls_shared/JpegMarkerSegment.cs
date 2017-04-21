@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace CharLS
 {
@@ -12,9 +11,9 @@ namespace CharLS
     {
         private readonly JpegMarkerCode _markerCode;
 
-        private readonly IList<byte> _content;
+        private readonly List<byte> _content;
 
-        private JpegMarkerSegment(JpegMarkerCode markerCode, IList<byte> content)
+        private JpegMarkerSegment(JpegMarkerCode markerCode, List<byte> content)
         {
             _markerCode = markerCode;
             _content = content;
@@ -95,7 +94,7 @@ namespace CharLS
                     throw new charls_error(
                         ApiResult.InvalidJlsParameters,
                         "jfif.Xthumbnail is > 0 but jfif.thumbnail == null_ptr");
-#if NET35
+#if NET20
                 var thumbnail = new byte[3 * jfif.Xthumbnail * jfif.Ythumbnail];
                 Array.Copy(jfif.thumbnail, 0, thumbnail, 0, 3 * jfif.Xthumbnail * jfif.Ythumbnail);
                 content.AddRange(jfif.thumbnail);
@@ -137,7 +136,7 @@ namespace CharLS
         {
             return new JpegMarkerSegment(
                 JpegMarkerCode.ApplicationData8,
-                new[] { (byte)'m', (byte)'r', (byte)'f', (byte)'x', (byte)transformation });
+                new List<byte> { (byte)'m', (byte)'r', (byte)'f', (byte)'x', (byte)transformation });
         }
 
 

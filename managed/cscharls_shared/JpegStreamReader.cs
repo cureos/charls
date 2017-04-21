@@ -1,7 +1,11 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
+#if NET20
+using System;
+#else
 using System.Linq;
+#endif
 
 namespace CharLS
 {
@@ -332,7 +336,12 @@ namespace CharLS
 
         private static string StringConvert(byte[] bytes)
         {
-            return new string(bytes.Select(b => (char)b).ToArray());
+#if NET20
+            var chars = Array.ConvertAll(bytes, Convert.ToChar);
+#else
+            var chars = bytes.Select(b => (char)b).ToArray();
+#endif
+            return new string(chars);
         }
     }
 }

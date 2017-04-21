@@ -22,7 +22,7 @@ namespace CharLS
                 var size = Marshal.SizeOf(default(T));
                 var handle = GCHandle.Alloc(source, GCHandleType.Pinned);
                 Marshal.Copy(
-#if NET35
+#if NET20
                     new IntPtr(handle.AddrOfPinnedObject().ToInt32() + sourceStartIndex * size),
 #else
                     handle.AddrOfPinnedObject() + sourceStartIndex * size,
@@ -48,7 +48,7 @@ namespace CharLS
                 Marshal.Copy(
                     source,
                     sourceStartIndex,
-#if NET35
+#if NET20
                     new IntPtr(handle.AddrOfPinnedObject().ToInt32() + destinationStartIndex * size),
 #else
                     handle.AddrOfPinnedObject() + destinationStartIndex * size,
