@@ -106,7 +106,7 @@ namespace CharLS
             dwtimeEncodeStart.Start();
             for (int i = 0; i < loopCount; ++i)
             {
-                var err = JpegLs.Encode(rgbyteRaw, rgbyteCompressed, parameters, out compressedLength, out message);
+                var err = JpegLs.Encode(rgbyteCompressed, rgbyteRaw, parameters, out compressedLength, out message);
                 Assert.True(err == ApiResult.OK);
             }
             double dwtimeEncodeComplete = dwtimeEncodeStart.ElapsedMilliseconds;
@@ -115,7 +115,7 @@ namespace CharLS
             dwtimeDecodeStart.Start();
             for (int i = 0; i < loopCount; ++i)
             {
-                var err = JpegLs.Decode(rgbyteCompressed, rgbyteOut, null, out message);
+                var err = JpegLs.Decode(rgbyteOut, rgbyteCompressed, null, out message);
                 Assert.True(err == ApiResult.OK);
             }
             double dwtimeDecodeComplete = dwtimeDecodeStart.ElapsedMilliseconds;

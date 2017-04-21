@@ -17,7 +17,7 @@ namespace CharLS
             var output = new byte[1000];
             string message = null;
 
-            var error = JpegLs.Decode(encodedData, output, null, out message);
+            var error = JpegLs.Decode(output, encodedData, null, out message);
             Assert.Equal(error, ApiResult.MissingJpegMarkerStart);
         }
 
@@ -33,7 +33,7 @@ namespace CharLS
             var output = new byte[1000];
             string message = null;
 
-            var error = JpegLs.Decode(encodedData, output, null, out message);
+            var error = JpegLs.Decode(output, encodedData, null, out message);
             Assert.Equal(error, ApiResult.UnsupportedEncoding);
         }
 
@@ -49,7 +49,7 @@ namespace CharLS
             var output = new byte[1000];
             string message = null;
 
-            var error = JpegLs.Decode(encodedData, output, null, out message);
+            var error = JpegLs.Decode(output, encodedData, null, out message);
             Assert.Equal(error, ApiResult.UnknownJpegMarker);
         }
 
@@ -64,7 +64,7 @@ namespace CharLS
             Array.Resize(ref rgbyteCompressed, 40000);
             Array.Copy(Enumerable.Repeat((byte)3, 40000 - 900).ToArray(), 0, rgbyteCompressed, 900, 40000 - 900);
 
-            var error = JpegLs.Decode(rgbyteCompressed, rgbyteOut, null, out message);
+            var error = JpegLs.Decode(rgbyteOut, rgbyteCompressed, null, out message);
             Assert.Equal(error, ApiResult.InvalidCompressedData);
         }
 
@@ -79,7 +79,7 @@ namespace CharLS
             rgbyteCompressed[300] = 0xFF;
             rgbyteCompressed[301] = 0xFF;
 
-            var error = JpegLs.Decode(rgbyteCompressed, rgbyteOut, null, out message);
+            var error = JpegLs.Decode(rgbyteOut, rgbyteCompressed, null, out message);
             Assert.Equal(error, ApiResult.InvalidCompressedData);
         }
     }

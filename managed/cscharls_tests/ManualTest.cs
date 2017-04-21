@@ -36,7 +36,7 @@ namespace CharLS
                 Assert.Equal(InterleaveMode.None, parameters.interleaveMode);
 
                 toBytes = new byte[parameters.stride * parameters.height];
-                result = JpegLs.Decode(compressed, toBytes, parameters, out message);
+                result = JpegLs.Decode(toBytes, compressed, parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
             }
@@ -81,7 +81,7 @@ namespace CharLS
                 Assert.Equal(1, parameters.components);
                 Assert.Equal(InterleaveMode.None, parameters.interleaveMode);
 
-                result = JpegLs.Decode(compressed, toStream, parameters, out message);
+                result = JpegLs.Decode(toStream, compressed, parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
             }
@@ -133,7 +133,7 @@ namespace CharLS
 
                 toBytes = new byte[parameters.stride * parameters.height];
                 parameters.interleaveMode = InterleaveMode.None;
-                result = JpegLs.Decode(compressed, toBytes, parameters, out message);
+                result = JpegLs.Decode(toBytes, compressed, parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
             }
@@ -175,7 +175,7 @@ namespace CharLS
                 width = width
             };
 
-            var result = JpegLs.Encode(inBytes, outBytes, parameters, out bytesWritten, out message);
+            var result = JpegLs.Encode(outBytes, inBytes, parameters, out bytesWritten, out message);
             Assert.Equal(ApiResult.OK, result);
 
             Array.Resize(ref outBytes, (int)bytesWritten);

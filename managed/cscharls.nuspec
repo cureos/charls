@@ -15,6 +15,15 @@ cscharls is a direct port of the original CharLS implementation in C++.</descrip
         <summary>C# implementation of the JPEG-LS standard</summary>
         <copyright>(c) 2007-2010 Jan de Vaan, 2017 Anders Gustafsson</copyright>
         <language>en-US</language>
+		<dependencies>
+			<group targetFramework="net20">
+			</group>
+			<group targetFramework="portable-net45+win8+wpa81">
+			</group>
+			<group targetFramework="netstandard1.1">
+				<dependency id="NETStandard.Library" version="1.6.1"/>
+			</group>
+		</dependencies>
         <tags>jpeg jpegls codec pcl netstandard net20</tags>
     </metadata>
     <files>

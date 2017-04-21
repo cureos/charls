@@ -8,7 +8,7 @@ namespace CharLS
 {
     public static class JpegLs
     {
-        public static ApiResult Encode(byte[] source, byte[] destination, JlsParameters parameters,
+        public static ApiResult Encode(byte[] destination, byte[] source, JlsParameters parameters,
             out ulong bytesWritten, out string errorMessage)
         {
             if (source == null || destination == null || parameters == null)
@@ -18,11 +18,11 @@ namespace CharLS
                 return ApiResult.InvalidJlsParameters;
             }
 
-            return EncodeStream(new ByteStreamInfo(source), new ByteStreamInfo(destination), parameters,
-                out bytesWritten, out errorMessage);
+            return EncodeStream(new ByteStreamInfo(destination), new ByteStreamInfo(source),
+                parameters, out bytesWritten, out errorMessage);
         }
 
-        public static ApiResult Encode(Stream source, Stream destination, JlsParameters parameters,
+        public static ApiResult Encode(Stream destination, Stream source, JlsParameters parameters,
             out ulong bytesWritten, out string errorMessage)
         {
             if (source == null || destination == null || parameters == null)
@@ -32,32 +32,32 @@ namespace CharLS
                 return ApiResult.InvalidJlsParameters;
             }
 
-            return EncodeStream(new ByteStreamInfo(source), new ByteStreamInfo(destination), parameters,
-                out bytesWritten, out errorMessage);
+            return EncodeStream(new ByteStreamInfo(destination), new ByteStreamInfo(source),
+                parameters, out bytesWritten, out errorMessage);
         }
 
-        public static ApiResult Decode(byte[] source, byte[] destination, JlsParameters info, out string errorMessage)
+        public static ApiResult Decode(byte[] destination, byte[] source, JlsParameters info, out string errorMessage)
         {
-            return DecodeStream(new ByteStreamInfo(source), new ByteStreamInfo(destination), info, out errorMessage);
+            return DecodeStream(new ByteStreamInfo(destination), new ByteStreamInfo(source), info, out errorMessage);
         }
 
-        public static ApiResult Decode(Stream source, Stream destination, JlsParameters info, out string errorMessage)
+        public static ApiResult Decode(Stream destination, Stream source, JlsParameters info, out string errorMessage)
         {
-            return DecodeStream(new ByteStreamInfo(source), new ByteStreamInfo(destination), info, out errorMessage);
+            return DecodeStream(new ByteStreamInfo(destination), new ByteStreamInfo(source), info, out errorMessage);
         }
 
-        public static ApiResult DecodeRect(byte[] compressedData, byte[] uncompressedData, JlsRect roi,
+        public static ApiResult DecodeRect(byte[] uncompressedData, byte[] compressedData, JlsRect roi,
             JlsParameters info, out string errorMessage)
         {
-            return DecodeRectStream(new ByteStreamInfo(compressedData), new ByteStreamInfo(uncompressedData), roi, info,
-                out errorMessage);
+            return DecodeRectStream(new ByteStreamInfo(uncompressedData), new ByteStreamInfo(compressedData), roi,
+                info, out errorMessage);
         }
 
-        public static ApiResult DecodeRect(Stream compressedData, Stream uncompressedData, JlsRect roi,
+        public static ApiResult DecodeRect(Stream uncompressedData, Stream compressedData, JlsRect roi,
             JlsParameters info, out string errorMessage)
         {
-            return DecodeRectStream(new ByteStreamInfo(compressedData), new ByteStreamInfo(uncompressedData), roi, info,
-                out errorMessage);
+            return DecodeRectStream(new ByteStreamInfo(uncompressedData), new ByteStreamInfo(compressedData), roi,
+                info, out errorMessage);
         }
 
         public static ApiResult ReadHeader(byte[] compressedData, out JlsParameters parameters, out string errorMessage)
@@ -70,7 +70,7 @@ namespace CharLS
             return ReadHeaderStream(new ByteStreamInfo(compressedData), out parameters, out errorMessage);
         }
 
-        private static ApiResult DecodeStream(ByteStreamInfo compressedStream, ByteStreamInfo rawStream,
+        private static ApiResult DecodeStream(ByteStreamInfo rawStream, ByteStreamInfo compressedStream,
             JlsParameters info, out string errorMessage)
         {
             try
@@ -99,7 +99,7 @@ namespace CharLS
             }
         }
 
-        private static ApiResult EncodeStream(ByteStreamInfo rawStreamInfo, ByteStreamInfo compressedStreamInfo,
+        private static ApiResult EncodeStream(ByteStreamInfo compressedStreamInfo, ByteStreamInfo rawStreamInfo,
             JlsParameters parameters, out ulong pcbyteWritten, out string errorMessage)
         {
             try
@@ -168,9 +168,8 @@ namespace CharLS
             }
         }
 
-        private static ApiResult DecodeRectStream(ByteStreamInfo compressedStream, ByteStreamInfo rawStreamInfo,
-            JlsRect roi,
-            JlsParameters info, out string errorMessage)
+        private static ApiResult DecodeRectStream(ByteStreamInfo rawStreamInfo, ByteStreamInfo compressedStream,
+            JlsRect roi, JlsParameters info, out string errorMessage)
         {
             try
             {
