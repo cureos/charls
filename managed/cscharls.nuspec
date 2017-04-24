@@ -2,8 +2,8 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>cscharls</id>
-        <version>0.1.0</version>
-        <title>Managed JPEG-LS codec</title>
+        <version>0.1.1</version>
+        <title>cscharls, a managed JPEG-LS codec</title>
         <authors>Anders Gustafsson,Cureos AB</authors>
         <owners>CharLS contributors</owners>
         <licenseUrl>https://raw.githubusercontent.com/team-charls/charls/master/License.txt</licenseUrl>
@@ -13,10 +13,16 @@
 
 cscharls is a direct port of the original CharLS implementation in C++.</description>
         <summary>C# implementation of the JPEG-LS standard</summary>
+		<releaseNotes>0.1.1
+-----
+* Use PCL library for .NET Framework 4.5.2 and higher.
+* Corrected computation of pinned object address in .NET Framework 2.0 class library.</releaseNotes>
         <copyright>(c) 2007-2010 Jan de Vaan, 2017 Anders Gustafsson</copyright>
         <language>en-US</language>
 		<dependencies>
 			<group targetFramework="net20">
+			</group>
+			<group targetFramework="net452">
 			</group>
 			<group targetFramework="portable-net45+win8+wpa81">
 			</group>
@@ -33,5 +39,7 @@ cscharls is a direct port of the original CharLS implementation in C++.</descrip
         <file src="csharls_standard\bin\Release\netstandard1.1\csharls.pdb" target="lib\netstandard1.1\csharls.pdb" />
         <file src="cscharls_portable\bin\Release\cscharls.dll" target="lib\portable-net45+win8+wpa81\cscharls.dll" />
         <file src="cscharls_portable\bin\Release\cscharls.pdb" target="lib\portable-net45+win8+wpa81\cscharls.pdb" />
+        <file src="cscharls_portable\bin\Release\cscharls.dll" target="lib\net452\cscharls.dll" />
+        <file src="cscharls_portable\bin\Release\cscharls.pdb" target="lib\net452\cscharls.pdb" />
     </files>
 </package>
