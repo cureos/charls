@@ -23,7 +23,7 @@ namespace CharLS
 
     internal static class Util
     {
-        private static void FixEndian(byte[] rgbyte, bool littleEndianData)
+        internal static void FixEndian(byte[] rgbyte, bool littleEndianData)
         {
             if (littleEndianData == BitConverter.IsLittleEndian)
                 return;
@@ -36,7 +36,7 @@ namespace CharLS
             }
         }
 
-        internal static bool ReadFile(string strName, byte[] pvec, int offset, int bytes)
+        internal static bool ReadFile(string strName, ref byte[] pvec, int offset = 0, int bytes = 0)
         {
             if (!File.Exists(strName))
             {
@@ -76,7 +76,7 @@ namespace CharLS
         }
 
         internal static void TestRoundTrip(string strName, byte[] rgbyteRaw, Size size, int cbit, int ccomp,
-            int loopCount)
+            int loopCount = 1)
         {
             var rgbyteCompressed = new byte[size.cx * size.cy * ccomp * cbit / 4];
 
@@ -104,38 +104,39 @@ namespace CharLS
             string message;
             var dwtimeEncodeStart = new Stopwatch();
             dwtimeEncodeStart.Start();
-            for (int i = 0; i < loopCount; ++i)
+            for (var i = 0; i < loopCount; ++i)
             {
                 var err = JpegLs.Encode(rgbyteCompressed, rgbyteRaw, parameters, out compressedLength, out message);
-                Assert.True(err == ApiResult.OK);
+                Assert.Equal(ApiResult.OK, err);
             }
             double dwtimeEncodeComplete = dwtimeEncodeStart.ElapsedMilliseconds;
 
             var dwtimeDecodeStart = new Stopwatch();
             dwtimeDecodeStart.Start();
-            for (int i = 0; i < loopCount; ++i)
+            for (var i = 0; i < loopCount; ++i)
             {
                 var err = JpegLs.Decode(rgbyteOut, rgbyteCompressed, null, out message);
-                Assert.True(err == ApiResult.OK);
+                Assert.Equal(ApiResult.OK, err);
             }
             double dwtimeDecodeComplete = dwtimeDecodeStart.ElapsedMilliseconds;
 
-            double bitspersample = compressedLength * 8 * 1.0 / (ccomp * size.cy * size.cx);
+            var bitspersample = compressedLength * 8 * 1.0 / (ccomp * size.cy * size.cx);
             Console.WriteLine($"RoundTrip test for: {strName}");
-            double encodeTime = dwtimeEncodeComplete / loopCount;
-            double decodeTime = dwtimeDecodeComplete / loopCount;
-            double symbolRate = (ccomp * size.cy * size.cx) / (1000.0 * decodeTime);
+            var encodeTime = dwtimeEncodeComplete / loopCount;
+            var decodeTime = dwtimeDecodeComplete / loopCount;
+            var symbolRate = (ccomp * size.cy * size.cx) / (1000.0 * decodeTime);
             Console.WriteLine(
                 $"Size:{size.cx:####}{size.cy:####}, Encode time:{encodeTime:####.00} ms, Decode time:{decodeTime:####.00} ms, Bits per sample:{bitspersample:##.00}, Decode rate:{symbolRate:###.0} M/s");
         }
 
-        internal static void TestFile(string strName, int ioffs, Size size2, int cbit, int ccomp, bool littleEndianFile,
-            int loopCount)
+        internal static void TestFile(string strName, int ioffs, Size size2, int cbit, int ccomp,
+            bool littleEndianFile = false,
+            int loopCount = 1)
         {
-            int byteCount = size2.cx * size2.cy * ccomp * ((cbit + 7) / 8);
-            byte[] rgbyteUncompressed = new byte[0];
+            var byteCount = size2.cx * size2.cy * ccomp * ((cbit + 7) / 8);
+            var rgbyteUncompressed = new byte[0];
 
-            if (!ReadFile(strName, rgbyteUncompressed, ioffs, byteCount))
+            if (!ReadFile(strName, ref rgbyteUncompressed, ioffs, byteCount))
                 return;
 
             if (cbit > 8)

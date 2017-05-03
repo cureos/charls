@@ -67,11 +67,16 @@
     <Compile Include="JpegStreamReaderTest.cs" />
     <Compile Include="JpegStreamWriterTest.cs" />
     <Compile Include="ManualTest.cs" />
+    <Compile Include="Performance.cs" />
     <Compile Include="TraitsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\test\desktop.ppm">
+      <Link>test\desktop.ppm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\..\test\jlsimage\banny_HP1.jls">
       <Link>test\banny_HP1.jls</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -90,6 +95,14 @@
     </None>
     <None Include="..\..\test\lena8b.jls">
       <Link>test\lena8b.jls</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\MR2_UNC">
+      <Link>test\MR2_UNC</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\SIEMENS-MR-RGB-16Bits.dcm">
+      <Link>test\SIEMENS-MR-RGB-16Bits.dcm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
@@ -119,6 +132,9 @@
       <Project>{4d48c923-1269-4312-949f-eed851bf98b0}</Project>
       <Name>cscharls_net20</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="test\rgb8bit\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
