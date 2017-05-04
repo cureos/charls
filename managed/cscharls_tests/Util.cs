@@ -107,7 +107,7 @@ namespace CharLS
             for (var i = 0; i < loopCount; ++i)
             {
                 var err = JpegLs.Encode(rgbyteCompressed, rgbyteRaw, parameters, out compressedLength, out message);
-                Assert.Equal(ApiResult.OK, err);
+                Assert.True(err == ApiResult.OK, message);
             }
             double dwtimeEncodeComplete = dwtimeEncodeStart.ElapsedMilliseconds;
 
@@ -116,7 +116,7 @@ namespace CharLS
             for (var i = 0; i < loopCount; ++i)
             {
                 var err = JpegLs.Decode(rgbyteOut, rgbyteCompressed, null, out message);
-                Assert.Equal(ApiResult.OK, err);
+                Assert.True(err == ApiResult.OK, message);
             }
             double dwtimeDecodeComplete = dwtimeDecodeStart.ElapsedMilliseconds;
 
@@ -124,7 +124,7 @@ namespace CharLS
             Console.WriteLine($"RoundTrip test for: {strName}");
             var encodeTime = dwtimeEncodeComplete / loopCount;
             var decodeTime = dwtimeDecodeComplete / loopCount;
-            var symbolRate = (ccomp * size.cy * size.cx) / (1000.0 * decodeTime);
+            var symbolRate = ccomp * size.cy * size.cx / (1000.0 * decodeTime);
             Console.WriteLine(
                 $"Size:{size.cx:####}{size.cy:####}, Encode time:{encodeTime:####.00} ms, Decode time:{decodeTime:####.00} ms, Bits per sample:{bitspersample:##.00}, Decode rate:{symbolRate:###.0} M/s");
         }
@@ -137,7 +137,7 @@ namespace CharLS
             var rgbyteUncompressed = new byte[0];
 
             if (!ReadFile(strName, ref rgbyteUncompressed, ioffs, byteCount))
-                return;
+                Assert.True(false, $"File {strName} could not be found.");
 
             if (cbit > 8)
             {

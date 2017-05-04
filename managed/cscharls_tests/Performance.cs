@@ -94,15 +94,13 @@ namespace CharLS
             var jpeglsCompressed = new byte[0];
             if (!ReadFile("test/decodetest.jls", ref jpeglsCompressed, 0, 0))
             {
-                Console.WriteLine("Failed to load the file decodetest.jls");
-                return;
+                Assert.True(false, "Failed to load the file decodetest.jls");
             }
 
             JlsParameters parameters;
             string message;
             var result = JpegLs.ReadHeader(jpeglsCompressed, out parameters, out message);
-            if (result != ApiResult.OK)
-                return;
+            Assert.Equal(ApiResult.OK, result);
 
             var uncompressed = new byte[parameters.height * parameters.width * 2];
 
@@ -111,8 +109,7 @@ namespace CharLS
             for (var i = 0; i < loopCount; ++i)
             {
                 result = JpegLs.Decode(uncompressed, jpeglsCompressed, parameters, out message);
-                if (result != ApiResult.OK)
-                    return;
+                Assert.Equal(ApiResult.OK, result);
             }
 
             start.Stop();
