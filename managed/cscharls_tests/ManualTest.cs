@@ -121,7 +121,7 @@ namespace CharLS
 
             try
             {
-                var compressed = File.ReadAllBytes($"test/{name}.jls");
+                var compressed = File.ReadAllBytes($"test/jlsimage/{name}.jls");
 
                 string message;
                 var result = JpegLs.ReadHeader(compressed, out parameters, out message);
@@ -132,7 +132,8 @@ namespace CharLS
                 Assert.Equal(InterleaveMode.Line, parameters.interleaveMode);
 
                 toBytes = new byte[parameters.stride * parameters.height];
-                parameters.interleaveMode = InterleaveMode.None;
+                parameters.outputBgr = true;    // Bitmap Format24bppRgb is sorted BGR
+
                 result = JpegLs.Decode(toBytes, compressed, parameters, out message);
 
                 Assert.Equal(ApiResult.OK, result);
@@ -147,20 +148,32 @@ namespace CharLS
                 var data = bitmap.LockBits(
                     new Rectangle(0, 0, parameters.width, parameters.height),
                     ImageLockMode.ReadWrite,
-                    PixelFormat.Format24bppRgb);
-                Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
-                bitmap.UnlockBits(data);
+                    bitmap.PixelFormat);
 
+                if (parameters.stride == data.Stride)
+                {
+                    Marshal.Copy(toBytes, 0, data.Scan0, toBytes.Length);
+                }
+                else
+                {
+                    int srcOffs = 0, stride = Math.Min(parameters.stride, data.Stride);
+                    var destOffs = data.Scan0.ToInt64();
+
+                    for (var j = 0; j < parameters.height; ++j, srcOffs += parameters.stride, destOffs += data.Stride)
+                        Marshal.Copy(toBytes, srcOffs, new IntPtr(destOffs), stride);
+                }
+
+                bitmap.UnlockBits(data);
                 bitmap.Save($"out/{name}.jpg");
             }
         }
 
         [Theory]
-        [InlineData("0015", 8, 1, 1024, 1024)]
-        [InlineData("alphatest", 8, 4, 380, 287)]
-        [InlineData("DSC_5455", 16, 3, 300, 200)]
-        [InlineData("lena8b", 8, 1, 512, 512)]
-        public void SuccessfullyEncodeRaw(string name, int bitsPerSample, int components, int height, int width)
+        [InlineData("0015", 8, 1, 1024, 1024, InterleaveMode.None)]
+        [InlineData("alphatest", 8, 4, 380, 287, InterleaveMode.Line)]
+        [InlineData("DSC_5455", 16, 3, 300, 200, InterleaveMode.Line)]
+        [InlineData("lena8b", 8, 1, 512, 512, InterleaveMode.None)]
+        public void SuccessfullyEncodeRaw(string name, int bitsPerSample, int components, int height, int width, InterleaveMode mode)
         {
             var inBytes = File.ReadAllBytes($"test/{name}.raw");
             var outBytes = new byte[inBytes.Length];
@@ -172,7 +185,8 @@ namespace CharLS
                 bitsPerSample = bitsPerSample,
                 components = components,
                 height = height,
-                width = width
+                width = width,
+                interleaveMode = mode
             };
 
             var result = JpegLs.Encode(outBytes, inBytes, parameters, out bytesWritten, out message);
