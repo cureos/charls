@@ -59,6 +59,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compliance.cs" />
     <Compile Include="DecoderStrategyTest.cs" />
     <Compile Include="EncoderStrategyTest.cs" />
     <Compile Include="EncoderStrategyTester.cs" />
@@ -73,8 +74,92 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\test\conformance\T16E0.JLS">
+      <Link>test\conformance\T16E0.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T16E3.JLS">
+      <Link>test\conformance\T16E3.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T16E3.pgm">
+      <Link>test\conformance\T16E3.pgm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8C0E0.JLS">
+      <Link>test\conformance\T8C0E0.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8C0E3.JLS">
+      <Link>test\conformance\T8C0E3.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8C1E0.JLS">
+      <Link>test\conformance\T8C1E0.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8C1E3.JLS">
+      <Link>test\conformance\T8C1E3.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8C2E0.JLS">
+      <Link>test\conformance\T8C2E0.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8C2E3.JLS">
+      <Link>test\conformance\T8C2E3.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8NDE0.JLS">
+      <Link>test\conformance\T8NDE0.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8NDE3.JLS">
+      <Link>test\conformance\T8NDE3.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8SSE0.JLS">
+      <Link>test\conformance\T8SSE0.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\T8SSE3.JLS">
+      <Link>test\conformance\T8SSE3.JLS</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\TEST16.PGM">
+      <Link>test\conformance\TEST16.PGM</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\TEST8.PPM">
+      <Link>test\conformance\TEST8.PPM</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\TEST8B.PGM">
+      <Link>test\conformance\TEST8B.PGM</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\TEST8BS2.PGM">
+      <Link>test\conformance\TEST8BS2.PGM</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\TEST8G.PGM">
+      <Link>test\conformance\TEST8G.PGM</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\TEST8GR4.PGM">
+      <Link>test\conformance\TEST8GR4.PGM</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\conformance\TEST8R.PGM">
+      <Link>test\conformance\TEST8R.PGM</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\..\test\desktop.ppm">
       <Link>test\desktop.ppm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\test\jlsimage\banny.ppm">
+      <Link>test\jlsimage\banny.ppm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\test\jlsimage\banny_HP1.jls">
