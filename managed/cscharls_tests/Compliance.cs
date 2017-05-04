@@ -35,8 +35,12 @@ namespace CharLS
             Assert.Equal(ApiResult.OK,
                 JpegLs.Encode(ourEncodedBytes, uncompressedData, info, out bytesWriten, out message));
 
-            Array.Resize(ref ourEncodedBytes, compressedData.Length);
-            Assert.Equal(compressedData, ourEncodedBytes);
+            for (var i = 0; i < compressedData.Length; ++i)
+            {
+                Assert.True(
+                    ourEncodedBytes[i] == compressedData[i],
+                    $"Expected vs. actual at index {i} ({compressedData.Length}): {compressedData[i]} {ourEncodedBytes[i]}");
+            }
         }
 
         private static void TestCompliance(byte[] compressedBytes, byte[] rgbyteRaw, bool bcheckEncode)
@@ -58,8 +62,12 @@ namespace CharLS
 
             if (info.allowedLossyError == 0)
             {
-                Array.Resize(ref rgbyteOut, rgbyteRaw.Length);
-                Assert.Equal(rgbyteRaw, rgbyteOut);
+                for (var i = 0; i < rgbyteRaw.Length; ++i)
+                {
+                    Assert.True(
+                        rgbyteOut[i] == rgbyteRaw[i],
+                        $"Expected vs. actual at index {i} ({rgbyteRaw.Length}): {rgbyteRaw[i]} {rgbyteOut[i]}");
+                }
             }
         }
 
