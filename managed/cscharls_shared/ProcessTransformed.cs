@@ -110,7 +110,7 @@ namespace CharLS
                 output[x + 3 * pixelStride] = colorTranformed.A;
             }
 
-            ByteArray.Copy(output, 0, samplesPerPixel * pixelStride, ptypeBuffer, bufferOffset);
+            ByteArray.Copy(output, 0, samplesPerPixel * cpixel, ptypeBuffer, bufferOffset);
         }
 
         private static void TransformRgbToBgr(byte[] pDest, int samplesPerPixel, int pixelCount)
@@ -204,7 +204,7 @@ namespace CharLS
                 output[x + 2 * pixelStride] = colorTranformed.B;
             }
 
-            ByteArray.Copy(output, 0, samplesPerPixel * pixelStride, ptypeBuffer, bufferOffset);
+            ByteArray.Copy(output, 0, samplesPerPixel * cpixel, ptypeBuffer, bufferOffset);
         }
 
         private void Transform(byte[] source, byte[] dest, int destOffset, int destStride, int pixelCount)

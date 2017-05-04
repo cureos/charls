@@ -16,7 +16,7 @@ namespace CharLS
 
     public class EncoderStrategy<TSample, TPixel> : JlsCodec<TSample, TPixel>, IEncoderStrategy where TSample : struct
     {
-        private readonly int _sizeOfPixel = Marshal.SizeOf(default(TPixel));
+        private readonly int _sizeOfPixel;
 
         private DecoderStrategy<TSample, TPixel> _qdecoder; // TODO Skip?
 
@@ -50,6 +50,8 @@ namespace CharLS
             _bytesWritten = 0;
             _buffer = null;
             _compressedStream = null;
+
+            _sizeOfPixel = parameters.components * (parameters.bitsPerSample > 8 ? 2 : 1);
         }
 
         // Setup codec for encoding and calls DoScan

@@ -19,7 +19,7 @@ namespace CharLS
 
             FixEndian(rgbyteUncompressed, littleEndianFile);
 
-            var pushortLen = rgbyteUncompressed.Length;
+            var pushortLen = rgbyteUncompressed.Length / 2;
             var pushort = new ushort[pushortLen];
 
             ByteArray.Copy(rgbyteUncompressed, 0, pushort, 0, pushortLen);
