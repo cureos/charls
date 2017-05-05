@@ -190,6 +190,26 @@
       <Link>test\SIEMENS-MR-RGB-16Bits.dcm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\external\rgb16bit\bridge.ppm">
+      <Link>test\rgb16bit\bridge.ppm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\rgb8bit\artificial.ppm">
+      <Link>test\rgb8bit\artificial.ppm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\rgb8bit\big_building.ppm">
+      <Link>test\rgb8bit\big_building.ppm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\rgb8bit\bridge.ppm">
+      <Link>test\rgb8bit\bridge.ppm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\rgb8bit\flower_foveon.ppm">
+      <Link>test\rgb8bit\flower_foveon.ppm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -218,9 +238,7 @@
       <Name>cscharls_net20</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="test\rgb8bit\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>

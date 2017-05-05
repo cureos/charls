@@ -44,11 +44,11 @@ namespace CharLS
         [InlineData("test/desktop.ppm", 40, 1280, 1024, 8, 3, false, 1)] // 8 bit color
         [InlineData("test/SIEMENS-MR-RGB-16Bits.dcm", -1, 192, 256, 12, 3, true, 1)] // 12 bit RGB
         [InlineData("test/DSC_5455.raw", 142949, 300, 200, 16, 3, true, 1)] // 16 bit RGB
-        [InlineData("test/rgb8bit/artificial.ppm", 17, 3072, 2048, 8, 3, false, 1, Skip = "File not available")] // 16 bit RGB
-        [InlineData("test/rgb8bit/bridge.ppm", 17, 2749, 4049, 8, 3, false, 1, Skip = "File not available")] // 16 bit RGB
-        [InlineData("test/rgb8bit/flower_foveon.ppm", 17, 2268, 1512, 8, 3, false, 1, Skip = "File not available")] // 16 bit RGB
-        [InlineData("test/rgb8bit/big_building.ppm", 17, 7216,5412,  8, 3, false, 1, Skip = "File not available")]
-        [InlineData("test/rgb16bit/bridge.ppm", 19, 2749,4049,  16, 3, true, 1, Skip = "File not available")]
+        [InlineData("test/rgb8bit/artificial.ppm", 17, 3072, 2048, 8, 3, false, 1, Skip = "Long running")] // 16 bit RGB
+        [InlineData("test/rgb8bit/bridge.ppm", 17, 2749, 4049, 8, 3, false, 1, Skip = "Long running")] // 16 bit RGB
+        [InlineData("test/rgb8bit/flower_foveon.ppm", 17, 2268, 1512, 8, 3, false, 1, Skip = "Long running")] // 16 bit RGB
+        [InlineData("test/rgb8bit/big_building.ppm", 17, 7216,5412,  8, 3, false, 1, Skip = "Long running")]
+        [InlineData("test/rgb16bit/bridge.ppm", 19, 2749,4049,  16, 3, true, 1, Skip = "Long running")]
         public void PerformanceTests(string strName, int ioffs, int width, int height, int cbit, int ccomp,
             bool littleEndianFile, int loopCount)
         { 
