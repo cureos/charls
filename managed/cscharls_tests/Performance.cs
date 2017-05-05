@@ -78,7 +78,7 @@ namespace CharLS
             start.Start();
             for (var i = 0; i < loopCount; ++i)
             {
-                result = JpegLs.Decode(uncompressed, jpeglsCompressed, parameters, out message);
+                result = JpegLs.Decode(uncompressed, jpeglsCompressed, null, out message);
                 Assert.Equal(ApiResult.OK, result);
             }
 

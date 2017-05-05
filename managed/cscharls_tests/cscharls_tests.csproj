@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="Compliance.cs" />
     <Compile Include="DecoderStrategyTest.cs" />
+    <Compile Include="DicomSamples.cs" />
     <Compile Include="EncoderStrategyTest.cs" />
     <Compile Include="EncoderStrategyTester.cs" />
     <Compile Include="JpegLSTest.cs" />
@@ -188,6 +189,58 @@
     </None>
     <None Include="..\..\test\SIEMENS-MR-RGB-16Bits.dcm">
       <Link>test\SIEMENS-MR-RGB-16Bits.dcm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\CT1_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\CT1_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\CT2_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\CT2_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\MG1_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\MG1_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\MR1_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\MR1_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\MR2_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\MR2_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\MR3_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\MR3_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\MR4_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\MR4_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\NM1_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\NM1_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\RG1_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\RG1_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\RG2_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\RG2_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\RG3_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\RG3_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\SC1_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\SC1_JLSL</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\external\compsamples_jpegls\IMAGES\JLSL\XA1_JLSL">
+      <Link>test\compsamples_jpegls\IMAGES\JLSL\XA1_JLSL</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\external\rgb16bit\bridge.ppm">
