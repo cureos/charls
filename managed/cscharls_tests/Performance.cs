@@ -68,8 +68,7 @@ namespace CharLS
             }
 
             JlsParameters parameters;
-            string message;
-            var result = JpegLs.ReadHeader(jpeglsCompressed, out parameters, out message);
+            var result = JpegLs.ReadHeader(jpeglsCompressed, out parameters);
             Assert.Equal(ApiResult.OK, result);
 
             var uncompressed = new byte[parameters.height * parameters.width * 2];
@@ -78,7 +77,7 @@ namespace CharLS
             start.Start();
             for (var i = 0; i < loopCount; ++i)
             {
-                result = JpegLs.Decode(uncompressed, jpeglsCompressed, null, out message);
+                result = JpegLs.Decode(uncompressed, jpeglsCompressed);
                 Assert.Equal(ApiResult.OK, result);
             }
 

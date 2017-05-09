@@ -27,8 +27,7 @@ namespace CharLS
             {
                 var compressed = File.ReadAllBytes("test/lena8b.jls");
 
-                string message;
-                var result = JpegLs.ReadHeader(compressed, out parameters, out message);
+                var result = JpegLs.ReadHeader(compressed, out parameters);
 
                 Assert.Equal(ApiResult.OK, result);
                 Assert.Equal(8, parameters.bitsPerSample);
@@ -36,7 +35,7 @@ namespace CharLS
                 Assert.Equal(InterleaveMode.None, parameters.interleaveMode);
 
                 toBytes = new byte[parameters.stride * parameters.height];
-                result = JpegLs.Decode(toBytes, compressed, parameters, out message);
+                result = JpegLs.Decode(toBytes, compressed, parameters);
 
                 Assert.Equal(ApiResult.OK, result);
             }
@@ -123,8 +122,7 @@ namespace CharLS
             {
                 var compressed = File.ReadAllBytes($"test/jlsimage/{name}.jls");
 
-                string message;
-                var result = JpegLs.ReadHeader(compressed, out parameters, out message);
+                var result = JpegLs.ReadHeader(compressed, out parameters);
 
                 Assert.Equal(ApiResult.OK, result);
                 Assert.Equal(8, parameters.bitsPerSample);
@@ -134,7 +132,7 @@ namespace CharLS
                 toBytes = new byte[parameters.stride * parameters.height];
                 parameters.outputBgr = true;    // Bitmap Format24bppRgb is sorted BGR
 
-                result = JpegLs.Decode(toBytes, compressed, parameters, out message);
+                result = JpegLs.Decode(toBytes, compressed, parameters);
 
                 Assert.Equal(ApiResult.OK, result);
             }
@@ -179,7 +177,6 @@ namespace CharLS
             var outBytes = new byte[inBytes.Length];
 
             ulong bytesWritten;
-            string message;
             var parameters = new JlsParameters
             {
                 bitsPerSample = bitsPerSample,
@@ -189,7 +186,7 @@ namespace CharLS
                 interleaveMode = mode
             };
 
-            var result = JpegLs.Encode(outBytes, inBytes, parameters, out bytesWritten, out message);
+            var result = JpegLs.Encode(outBytes, inBytes, parameters, out bytesWritten);
             Assert.Equal(ApiResult.OK, result);
 
             Array.Resize(ref outBytes, (int)bytesWritten);

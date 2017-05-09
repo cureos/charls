@@ -27,13 +27,11 @@ namespace CharLS
         private static void VerifyEncodedBytes(byte[] uncompressedData, byte[] compressedData)
         {
             JlsParameters info;
-            string message;
-            Assert.Equal(ApiResult.OK, JpegLs.ReadHeader(compressedData, out info, out message));
+            Assert.Equal(ApiResult.OK, JpegLs.ReadHeader(compressedData, out info));
 
             var ourEncodedBytes = new byte[compressedData.Length + 16];
             ulong bytesWriten;
-            Assert.Equal(ApiResult.OK,
-                JpegLs.Encode(ourEncodedBytes, uncompressedData, info, out bytesWriten, out message));
+            Assert.Equal(ApiResult.OK, JpegLs.Encode(ourEncodedBytes, uncompressedData, info, out bytesWriten));
 
             for (var i = 0; i < compressedData.Length; ++i)
             {
@@ -46,8 +44,7 @@ namespace CharLS
         private static void TestCompliance(byte[] compressedBytes, byte[] rgbyteRaw, bool bcheckEncode)
         {
             JlsParameters info;
-            string message;
-            var err = JpegLs.ReadHeader(compressedBytes, out info, out message);
+            var err = JpegLs.ReadHeader(compressedBytes, out info);
             Assert.Equal(ApiResult.OK, err);
 
             if (bcheckEncode)
@@ -57,7 +54,7 @@ namespace CharLS
 
             var rgbyteOut = new byte[info.height * info.width * ((info.bitsPerSample + 7) / 8) * info.components];
 
-            err = JpegLs.Decode(rgbyteOut, compressedBytes, null, out message);
+            err = JpegLs.Decode(rgbyteOut, compressedBytes, null);
             Assert.Equal(ApiResult.OK, err);
 
             if (info.allowedLossyError == 0)
@@ -80,8 +77,7 @@ namespace CharLS
             Assert.True(ReadFile(strNameEncoded, ref rgbyteFile));
 
             JlsParameters parameters;
-            string message;
-            Assert.Equal(ApiResult.OK, JpegLs.ReadHeader(rgbyteFile, out parameters, out message));
+            Assert.Equal(ApiResult.OK, JpegLs.ReadHeader(rgbyteFile, out parameters));
 
             var rgbyteRaw = new byte[0];
             Assert.True(ReadFile(strNameRaw, ref rgbyteRaw, ioffs));

@@ -15,9 +15,8 @@ namespace CharLS
         {
             byte[] encodedData = { 0x33, 0x33 };
             var output = new byte[1000];
-            string message = null;
 
-            var error = JpegLs.Decode(output, encodedData, null, out message);
+            var error = JpegLs.Decode(output, encodedData);
             Assert.Equal(error, ApiResult.MissingJpegMarkerStart);
         }
 
@@ -31,9 +30,8 @@ namespace CharLS
                     0x00, 0x00 // Lenght of data of the marker
                 };
             var output = new byte[1000];
-            string message = null;
 
-            var error = JpegLs.Decode(output, encodedData, null, out message);
+            var error = JpegLs.Decode(output, encodedData);
             Assert.Equal(error, ApiResult.UnsupportedEncoding);
         }
 
@@ -47,9 +45,8 @@ namespace CharLS
                     0x00, 0x00 // Lenght of data of the marker
                 };
             var output = new byte[1000];
-            string message = null;
 
-            var error = JpegLs.Decode(output, encodedData, null, out message);
+            var error = JpegLs.Decode(output, encodedData);
             Assert.Equal(error, ApiResult.UnknownJpegMarker);
         }
 
@@ -58,13 +55,12 @@ namespace CharLS
         {
             var rgbyteCompressed = File.ReadAllBytes("test/lena8b.jls");
             var rgbyteOut = new byte[512 * 512];
-            string message = null;
 
             Array.Resize(ref rgbyteCompressed, 900);
             Array.Resize(ref rgbyteCompressed, 40000);
             Array.Copy(Enumerable.Repeat((byte)3, 40000 - 900).ToArray(), 0, rgbyteCompressed, 900, 40000 - 900);
 
-            var error = JpegLs.Decode(rgbyteOut, rgbyteCompressed, null, out message);
+            var error = JpegLs.Decode(rgbyteOut, rgbyteCompressed);
             Assert.Equal(error, ApiResult.InvalidCompressedData);
         }
 
@@ -74,12 +70,11 @@ namespace CharLS
         {
             var rgbyteCompressed = File.ReadAllBytes("test/lena8b.jls");
             var rgbyteOut = new byte[512 * 512];
-            string message = null;
 
             rgbyteCompressed[300] = 0xFF;
             rgbyteCompressed[301] = 0xFF;
 
-            var error = JpegLs.Decode(rgbyteOut, rgbyteCompressed, null, out message);
+            var error = JpegLs.Decode(rgbyteOut, rgbyteCompressed);
             Assert.Equal(error, ApiResult.InvalidCompressedData);
         }
     }

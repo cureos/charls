@@ -50,14 +50,13 @@ namespace CharLS
             data = tmp.ToArray();
 
             JlsParameters parameters;
-            string message;
-            var error = JpegLs.ReadHeader(data, out parameters, out message);
+            var error = JpegLs.ReadHeader(data, out parameters);
             Assert.Equal(ApiResult.OK, error);
 
             //    0xFE, 0xFF, 0x00, 0xE0, 0x00, 0x00, 0x01, 0x00
             var dataUnc = new byte[parameters.stride * parameters.height];
 
-            error = JpegLs.Decode(dataUnc, data, null, out message);
+            error = JpegLs.Decode(dataUnc, data);
             Assert.Equal(ApiResult.OK, error);
         }
 
