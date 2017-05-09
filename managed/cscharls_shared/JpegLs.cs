@@ -22,6 +22,13 @@ namespace CharLS
                 parameters, out bytesWritten, out errorMessage);
         }
 
+        public static ApiResult Encode(byte[] destination, byte[] source, JlsParameters parameters,
+            out ulong bytesWritten)
+        {
+            string errorMessage;
+            return Encode(destination, source, parameters, out bytesWritten, out errorMessage);
+        }
+
         public static ApiResult Encode(Stream destination, Stream source, JlsParameters parameters,
             out ulong bytesWritten, out string errorMessage)
         {
@@ -41,6 +48,12 @@ namespace CharLS
             return DecodeStream(new ByteStreamInfo(destination), new ByteStreamInfo(source), info, out errorMessage);
         }
 
+        public static ApiResult Decode(byte[] destination, byte[] source, JlsParameters info = null)
+        {
+            string errorMessage;
+            return DecodeStream(new ByteStreamInfo(destination), new ByteStreamInfo(source), info, out errorMessage);
+        }
+
         public static ApiResult Decode(Stream destination, Stream source, JlsParameters info, out string errorMessage)
         {
             return DecodeStream(new ByteStreamInfo(destination), new ByteStreamInfo(source), info, out errorMessage);
@@ -49,6 +62,14 @@ namespace CharLS
         public static ApiResult DecodeRect(byte[] uncompressedData, byte[] compressedData, JlsRect roi,
             JlsParameters info, out string errorMessage)
         {
+            return DecodeRectStream(new ByteStreamInfo(uncompressedData), new ByteStreamInfo(compressedData), roi,
+                info, out errorMessage);
+        }
+
+        public static ApiResult DecodeRect(byte[] uncompressedData, byte[] compressedData, JlsRect roi,
+            JlsParameters info = null)
+        {
+            string errorMessage;
             return DecodeRectStream(new ByteStreamInfo(uncompressedData), new ByteStreamInfo(compressedData), roi,
                 info, out errorMessage);
         }
@@ -62,6 +83,12 @@ namespace CharLS
 
         public static ApiResult ReadHeader(byte[] compressedData, out JlsParameters parameters, out string errorMessage)
         {
+            return ReadHeaderStream(new ByteStreamInfo(compressedData), out parameters, out errorMessage);
+        }
+
+        public static ApiResult ReadHeader(byte[] compressedData, out JlsParameters parameters)
+        {
+            string errorMessage;
             return ReadHeaderStream(new ByteStreamInfo(compressedData), out parameters, out errorMessage);
         }
 
