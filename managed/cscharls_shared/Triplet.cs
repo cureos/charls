@@ -4,6 +4,8 @@
 using System;
 using System.Runtime.InteropServices;
 
+using static CharLS.util;
+
 namespace CharLS
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -18,7 +20,7 @@ namespace CharLS
 
         public Triplet(int x1, int x2, int x3)
         {
-            SetDelimited(x1, x2, x3, out _r, out _g, out _b);
+            Delimit(x1, x2, x3, out _r, out _g, out _b);
         }
 
         public Triplet(TSample x1, TSample x2, TSample x3)
@@ -86,41 +88,6 @@ namespace CharLS
         {
             return Math.Abs(other.v1 - v1) <= tolerance && Math.Abs(other.v2 - v2) <= tolerance
                    && Math.Abs(other.v3 - v3) <= tolerance;
-        }
-
-        private static void SetDelimited(int x1, int x2, int x3, out TSample v1, out TSample v2, out TSample v3)
-        {
-            int min = int.MinValue, max = int.MaxValue;
-
-            var type = typeof(TSample);
-            if (type == typeof(byte))
-            {
-                min = byte.MinValue;
-                max = byte.MaxValue;
-            }
-            else if (type == typeof(sbyte))
-            {
-                min = sbyte.MinValue;
-                max = sbyte.MaxValue;
-            }
-            else if (type == typeof(ushort))
-            {
-                min = ushort.MinValue;
-                max = ushort.MaxValue;
-            }
-            else if (type == typeof(short))
-            {
-                min = short.MinValue;
-                max = short.MaxValue;
-            }
-            else if (type == typeof(uint))
-            {
-                min = (int)uint.MinValue;
-            }
-
-            v1 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x1, min), max), type);
-            v2 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x2, min), max), type);
-            v3 = (TSample)Convert.ChangeType(Math.Min(Math.Max(x3, min), max), type);
         }
     }
 }

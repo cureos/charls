@@ -59,7 +59,7 @@ namespace CharLS
             {
                 if (parameters.interleaveMode == InterleaveMode.Sample)
                 {
-                    if (parameters.bitsPerSample == 8) return CreateCodec(new LosslessTraits8(), parameters);
+                    if (parameters.bitsPerSample == 8) return CreateCodec(new LosslessTraitsTriplet<byte>(8), parameters);
                 }
                 else
                 {

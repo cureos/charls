@@ -106,7 +106,7 @@ namespace CharLS
         }
     }
 
-    public class LosslessTraitsTriplet<TSample> : LosslessTraitsImplT<TSample, ITriplet<TSample>>
+    public class LosslessTraitsTriplet<TSample> : LosslessTraitsImplT<TSample, Triplet<TSample>>
         where TSample : struct
     {
         public LosslessTraitsTriplet(int bitsperpixel)
@@ -114,14 +114,14 @@ namespace CharLS
         {
         }
 
-        public override bool IsNear(ITriplet<TSample> lhs, ITriplet<TSample> rhs)
+        public override bool IsNear(Triplet<TSample> lhs, Triplet<TSample> rhs)
         {
             return lhs.Equals(rhs);
         }
 
         public override TSample ComputeReconstructedSample(int Px, int ErrVal)
         {
-            return (TSample)Convert.ChangeType(Px + ErrVal, typeof(TSample));
+            return Delimit<TSample>(Px + ErrVal);
         }
     }
 }

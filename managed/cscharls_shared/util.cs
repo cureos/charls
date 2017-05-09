@@ -46,6 +46,74 @@ namespace CharLS
             return preset;
         }
 
+        internal static T Delimit<T>(int alpha)
+        {
+            int min = int.MinValue, max = int.MaxValue;
+
+            var type = typeof(T);
+            if (type == typeof(byte))
+            {
+                min = byte.MinValue;
+                max = byte.MaxValue;
+            }
+            else if (type == typeof(sbyte))
+            {
+                min = sbyte.MinValue;
+                max = sbyte.MaxValue;
+            }
+            else if (type == typeof(ushort))
+            {
+                min = ushort.MinValue;
+                max = ushort.MaxValue;
+            }
+            else if (type == typeof(short))
+            {
+                min = short.MinValue;
+                max = short.MaxValue;
+            }
+            else if (type == typeof(uint))
+            {
+                min = (int)uint.MinValue;
+            }
+
+            return (T)Convert.ChangeType(Math.Min(Math.Max(alpha, min), max), type);
+        }
+
+        internal static void Delimit<T>(int x1, int x2, int x3, out T v1, out T v2, out T v3)
+        {
+            int min = int.MinValue, max = int.MaxValue;
+
+            var type = typeof(T);
+            if (type == typeof(byte))
+            {
+                min = byte.MinValue;
+                max = byte.MaxValue;
+            }
+            else if (type == typeof(sbyte))
+            {
+                min = sbyte.MinValue;
+                max = sbyte.MaxValue;
+            }
+            else if (type == typeof(ushort))
+            {
+                min = ushort.MinValue;
+                max = ushort.MaxValue;
+            }
+            else if (type == typeof(short))
+            {
+                min = short.MinValue;
+                max = short.MaxValue;
+            }
+            else if (type == typeof(uint))
+            {
+                min = (int)uint.MinValue;
+            }
+
+            v1 = (T)Convert.ChangeType(Math.Min(Math.Max(x1, min), max), type);
+            v2 = (T)Convert.ChangeType(Math.Min(Math.Max(x2, min), max), type);
+            v3 = (T)Convert.ChangeType(Math.Min(Math.Max(x3, min), max), type);
+        }
+
         private static int CLAMP(int i, int j, int MAXVAL)
         {
             return i > MAXVAL || i < j ? j : i;
