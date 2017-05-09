@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2017 cscharls contributors.
 // Licensed under the BSD-3 license.
 
+using System.Collections.Generic;
 using Xunit;
 
 using static CharLS.Util;
@@ -37,20 +38,23 @@ namespace CharLS
 
             var offset = findstring(data, pixeldataStart, pixeldataStart.Length);
 
-//TODO        data.erase(data.begin(), data.begin() + offset - 4);
+            var tmp = new List<byte>(data);
+            tmp.RemoveRange(0, offset - 4);
 
             // remove the dicom fragment headers (in the concerned images they occur every 64k)
             for (var i = 0; i < data.Length; i += 64 * 1024)
             {
-//TODO        data.erase(data.begin() + i, data.begin() + i + 8);
+                tmp.RemoveRange(i, 8);
             }
+
+            data = tmp.ToArray();
 
             JlsParameters parameters;
             string message;
             var error = JpegLs.ReadHeader(data, out parameters, out message);
             Assert.Equal(ApiResult.OK, error);
 
-//    0xFE, 0xFF, 0x00, 0xE0, 0x00, 0x00, 0x01, 0x00
+            //    0xFE, 0xFF, 0x00, 0xE0, 0x00, 0x00, 0x01, 0x00
             var dataUnc = new byte[parameters.stride * parameters.height];
 
             error = JpegLs.Decode(dataUnc, data, null, out message);
